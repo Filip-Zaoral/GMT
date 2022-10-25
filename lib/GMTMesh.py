@@ -1,13 +1,10 @@
 
-from sys import argv, platform
+from sys import argv
 from os import chdir,rename,remove,path
 from glob import glob
 from math import pi,sqrt,floor
-from Lib import writeToLogFile
-if platform == "win32":
-    from Lib.gmsh.lib import gmsh                                              # Locates the Gmsh source library directory.
-else:
-    import gmsh                                                                # Locates the Gmsh source library directory.
+from lib import writeToLogFile
+from lib.gmsh.lib import gmsh                                                  # Locates the Gmsh source library directory.
 from time import perf_counter
 import numpy as np
 from collections import deque

@@ -27,7 +27,7 @@ else:
     
     # Write the working directory path to the Gmsh Configuration File:
     ModelName = glob('*.py')[0].replace('.py','')
-    with open(os.path.join(GMT,'GMT_Configuration_File.gcf'),'a',            \
+    with open(os.path.join(GMT,'GMT_Configuration_File.gcf'),'a',             \
               encoding = 'utf8') as GCF:                                       # Opens the Gmsh Configuration File for writing.
         GCF.write('\n\nWorkingDirectoryPath       = ' + CWD + ' # Absolute pa'\
                   'th to the working directory.')                              # Writes the current directory path into the Gmsh Configuration File.

@@ -6,12 +6,12 @@ def Import():
     from sys import platform
     from os import getenv, path
     from distutils.util import strtobool
-    from Lib import GmshMesh, writeToLogFile
+    from lib import GMTMesh, writeToLogFile
     from time import perf_counter
     import re
     import numpy as np
     
-    # Declaration of default Gmsh configuration options:
+    # Declaration of default GMT configuration options:
     Log = []
     GCF = {
            'WorkingDirectoryPath' : [None,3],                                  # Absolute path to the working directory.                                                               [string]
@@ -56,7 +56,7 @@ def Import():
            'LocalMeshGrowthRate' : [[],2]                                      # Rate of change of size of the neighbouring elements near the selected sufraces/volumes.               [float]
            }
     
-    # Import of configuration options from the Gmsh Configuration File:
+    # Import of configuration options from the GMT Configuration File:
     TModel = perf_counter(); TPreP = perf_counter()
     SignedParameters = ['inflationlayersgrowthrate','localmeshgrowthrate']
     LocalParameters = ['inflationlayers','inflationlayersmethod',             \
@@ -67,17 +67,17 @@ def Import():
     LocalParametersSV = ['localmeshsurfaces','localmeshvolumes',              \
                          'inflationlayerssurfaces']
     GCFName = glob(path.join(getenv('GMTPATH'),                               \
-                             'Gmsh_Configuration_File.gcf'))[0]                # Obtains a list of names of all Gmsh Configuration Files in the installation directory.
-    GCFRaw = open(GCFName,'r')                                                 # Opens the Gmsh Configuration File for reading.
-    GCFLines = GCFRaw.readlines()                                              # Reads the Gmsh Configuration File.
-    GCFRaw.close()                                                             # Closes the Gmsh Configuration File.
+                             'GMT_Configuration_File.gcf'))[0]                 # Obtains a list of names of all GMT Configuration Files in the installation directory.
+    GCFRaw = open(GCFName,'r')                                                 # Opens the GMT Configuration File for reading.
+    GCFLines = GCFRaw.readlines()                                              # Reads the GMT Configuration File.
+    GCFRaw.close()                                                             # Closes the GMT Configuration File.
     nGCFLines = len(GCFLines)
     for i in range(nGCFLines):
         GCFLines[i] = GCFLines[i].replace(" ","").replace("\t","")
-    for Key, Value in GCF.items():                                             # Loops over key - value pairs in the dictionary of default Gmsh configuration options.
-        for i in range(nGCFLines):                                             # Loops over key - value pairs in the user specified Gmsh configuration file.
+    for Key, Value in GCF.items():                                             # Loops over key - value pairs in the dictionary of default GMT configuration options.
+        for i in range(nGCFLines):                                             # Loops over key - value pairs in the user specified GMT configuration file.
             GCFLine = GCFLines[i].splitlines()[0]
-            idxA = GCFLine.find(Key)                                           # Looks for keys in the Gmsh configuration file.
+            idxA = GCFLine.find(Key)                                           # Looks for keys in the GMT configuration file.
             if idxA == 0:                                                      # Checks for lines with keys.
                 idxA = GCFLine.find('=') + 1                                   # Looks for the begining index of the value entry in the line.
                 idxB = GCFLine.find('#')                                       # Looks for the endg index of the value entry in the line.
@@ -153,22 +153,22 @@ def Import():
                             Parameter = [Parameter[idxCD[j] + 1:idxCD[j + 1]] \
                                          for j in range(nP)]
                             Value[0].append(Parameter)
-                    GCF[Key] = Value                                           # Writes the key value to the dictionary of Gmsh configuration options.
+                    GCF[Key] = Value                                           # Writes the key value to the dictionary of GMT configuration options.
                 elif (Label in LocalParametersSV) and (Label == Key.lower()):
                     Value[0].append([])
-                    GCF[Key] = Value                                           # Writes the key value to the dictionary of Gmsh configuration options.
+                    GCF[Key] = Value                                           # Writes the key value to the dictionary of GMT configuration options.
         i += 1
     
     # Validation of input key values for configuration options:
     if GCF['WorkingDirectoryPath'][0] is None:
-        Log.append("Error: The Gmsh Configuration File " + GCFName + " is mis"\
-                   "sing an absolute path to the working directory")           # Raises error if the Gmsh Configuration File lacks an absolute path to the working directory.
+        Log.append("Error: The GMT Configuration File " + GCFName + " is miss"\
+                   "ing an absolute path to the working directory")            # Raises error if the GMT Configuration File lacks an absolute path to the working directory.
         writeToLogFile.write(Log,GCF['Name'][0])                               # The saved file can be located in the working directory.
         raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
                         "file for details")
     if GCF['Name'][0] is None:
-        Log.append("Error: The Gmsh Configuration File " + GCFName + " is mis"\
-                   "sing a name of the model")                                 # Raises error if the Gmsh Configuration File lacks a name of the model.
+        Log.append("Error: The GMT Configuration File " + GCFName + " is miss"\
+                   "ing a name of the model")                                  # Raises error if the GMT Configuration File lacks a name of the model.
         writeToLogFile.write(Log,"Log")                                        # The saved file can be located in the working directory.
         raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
                         "file for details")
@@ -273,9 +273,9 @@ def Import():
     # Launch of the respective meshing module:
     TModel = perf_counter() - TModel; TPreP = perf_counter() - TPreP
     if GCF['InputFormat'][0] == 1:
-        GmshMesh.IGS(GCF,Log,TModel,TPreP)
+        GMTMesh.IGS(GCF,Log,TModel,TPreP)
     elif GCF['InputFormat'][0] == 2:
-        GmshMesh.STL(GCF,Log,TModel,TPreP)
+        GMTMesh.STL(GCF,Log,TModel,TPreP)
     else:
         Log.append("Error: Value of the key 'Format' should be either '1' or "\
                    "'2'")                                                      # Raises error if the parameter 'Format' contains invalid value.
