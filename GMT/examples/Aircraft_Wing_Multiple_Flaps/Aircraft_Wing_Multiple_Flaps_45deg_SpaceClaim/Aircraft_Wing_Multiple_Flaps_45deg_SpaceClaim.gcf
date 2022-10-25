@@ -1,0 +1,82 @@
+
+# General Parameters:
+WorkingDirectoryPath       =       # Absolute path to the working directory...........................................................................................................................................[string]
+Name                       =       # Model name.......................................................................................................................................................................[string]
+InputFormat                = 1     # Input geometry file format (1: IGES, 2: STL).....................................................................................................................................[integer]
+GeometryTolerance          = 5.E-8 # Geometric tolerance..............................................................................................................................................................[float]
+MaxNumThreads              = 1     # Maximum number of CPU threads to use for meshing.................................................................................................................................[integer]
+OutputFormat               = 1     # Format of the output model mesh files (1: MSH, 2: UNV, 3: VTK)...................................................................................................................[float]
+Binary                     = False # Save the mesh to a binary file (if possible)?....................................................................................................................................[boolean]
+LaunchGmsh                 = True  # Run Gmsh to see the result after finishing the task?.............................................................................................................................[boolean]
+
+# STL Toplogy Parameters:
+STLRemesh                  = False # Parameterize and remesh the STL model geometry ?.................................................................................................................................[boolean]
+STLFacetAngle              = 45.   # [°] Minimum angle between the normals of two adjacent triangles when their common segment is already considered an edge..........................................................[float]
+STLCurveAngle              = 180.  # [°] Minimum angle between two segments when their common point is already considered a corner....................................................................................[float]
+
+# Global Meshing Parameters:
+MeshDim                    = 3     # Number of dimensions of the resulting finite element mesh (0: 0D, 1: 1D, 2: 2D, 3: 3D)...........................................................................................[integer]
+MeshAlgorithm              = 6     # 2D meshing algorithm (1: MeshAdapt, 2: Automatic, 3: Initial mesh only, 5: Delaunay, 6: Frontal-Delaunay, 7: BAMG, 8: Frontal-Delaunay for Quads, 9: Packing of Parallelograms)..[integer]
+MeshAlgorithm3D            = 10    # 3D meshing algorithm (1: Delaunay, 3: Initial mesh only, 4: Frontal, 7: MMG3D, 9: R-tree, 10: HXT)...............................................................................[integer]
+MeshSizeFromCurvature      = 40    # Target number of segments per 2π radians of curvature............................................................................................................................[integer]
+MeshSizeExtendFromBoundary = False # Extend computation of mesh element sizes from the boundaries into the interior?..................................................................................................[boolean]
+MeshSizeMax                = 150.  # Maximum global size of the finite elements.......................................................................................................................................[float]
+MeshSizeMin                = 0.15  # Minimum global size of the finite elements.......................................................................................................................................[float]
+MinimumCircleNodes         = 6     # Minimum number of nodes per circle or ellipse....................................................................................................................................[integer]
+MinimumCurveNodes          = 6     # Minimum number of nodes per curve other than a line, circle, or ellipse..........................................................................................................[integer]
+ElementOrder               = 1     # Order of the finite elements (1: linear, 2: quadratic, 3: cubic).................................................................................................................[integer]
+SecondOrderIncomplete      = True  # Create incomplete 2nd order elements (8-node quads, 20-node hexas, etc.,)?.......................................................................................................[boolean]
+SecondOrderLinear          = False # Create mid-side nodes of higher-order elements and nodes resulting from "subdivision" algorithms by simple linear interpolation?.................................................[boolean]
+Optimize                   = True  # Optimize the mesh to improve the quality of tetrahedral finite elements?.........................................................................................................[boolean]
+OptimizeNetgen             = False # Optimize the mesh to improve the quality of tetrahedral finite elements using the Netgen library?................................................................................[boolean]
+HighOrderOptimize          = 4     # Algorithm for optimization of higher order element mesh (0: none, 1: optimization, 2: elastic and optimization, 3: elastic, 4: fast curving).....................................[integer]
+
+# Local Meshing Parameters:
+# Wing:
+LocalMeshSurfaces          = A4,A5,A38,A39,A40,A41,A42,A43,A73,A74,A84,A85,A86,A116,A117,A118,A119
+LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
+LocalMeshSize              = 25.   # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshGrowthRate        = 1.25  # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
+
+# Small Flap:
+LocalMeshSurfaces          = A2,A63,A64,A65,A66,A131,A132,A133
+LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
+LocalMeshSize              = 7.5   # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshGrowthRate        = 1.4   # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
+
+# Large Flap/Flap Cavity:
+LocalMeshSurfaces          = A1,A6,A7,A26,A33,A37,A47,A68,A69,A90,A94,A96,A97,A98
+LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
+LocalMeshSize              = 12.   # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshGrowthRate        = 1.4   # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
+
+# Wing/Large Flap Trailing Edges:
+LocalMeshSurfaces          = A28,A29,A30,A31,A32,A34,A44,A48,A49,A70,A71,A72,A87,A88,A89,A95,A101,A102,A103,A104,A105,A106
+LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
+LocalMeshSize              = 1.8   # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshGrowthRate        = 1.25  # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
+
+# Small Flap Trailing Edge:
+LocalMeshSurfaces          = A53,A54,A55,A56,A57,A58,A59,A60,A61,A62,A67,A122,A123,A124,A125,A126,A127,A128,A129,A130
+LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
+LocalMeshSize              = 0.15  # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshGrowthRate        = 1.25  # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
+
+# Upper Sharp Edge
+LocalMeshSurfaces          = A8,A9,A10,A11,A12,A13,A14,A15,A16,A45,A100,A107,A108,A109,A110,A111,A112,A113,A114,A115
+LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
+LocalMeshSize              = 0.2   # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshGrowthRate        = 1.25  # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
+
+# Lower Sharp Edge:
+LocalMeshSurfaces          = A17,A18,A19,A20,A21,A22,A23,A24,A25,A46,A75,A76,A77,A78,A79,A80,A81,A82,A83,A99
+LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
+LocalMeshSize              = 0.5   # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshGrowthRate        = 1.25  # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
+
+# Inflation Layers Parameters:
+InflationLayersSurfaces    = A4,A5,A38,A39,A40,A41,A42,A43,A73,A74,A84,A85,A86,A116,A117,A118,A119,A2,A63,A64,A65,A66,A131,A132,A133,A1,A6,A7,A26,A33,A37,A68,A69,A90,A94,A96,A97,A28,A29,A30,A31,A32,A34,A44,A48,A49,A70,A71,A72,A87,A88,A89,A95,A101,A102,A103,A104,A105,A106,A53,A54,A55,A56,A57,A58,A59,A60,A61,A62,A67,A122,A123,A124,A125,A126,A127,A128,A129,A130,A8,A9,A10,A11,A12,A13,A14,A15,A16,A45,A100,A107,A108,A109,A110,A111,A112,A113,A114,A115,A17,A18,A19,A20,A21,A22,A23,A24,A25,A46,A75,A76,A77,A78,A79,A80,A81,A82,A83,A99,A47,A98
+InflationLayers            = 10    # Number of inflation layers to generate on the selected surfaces..................................................................................................................[integer]
+InflationLayersMethod      = 3     # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Stretch ratio)......................................................................[integer]
+InflationLayersThickness   = 0.3   # Inflation layer thickness parameter according to specified method................................................................................................................[float]
+InflationLayersGrowthRate  = 1.25  # Rate of change of thickness of two neighbouring inflation layers, belonging to the selected surface............................................ .................................[float]

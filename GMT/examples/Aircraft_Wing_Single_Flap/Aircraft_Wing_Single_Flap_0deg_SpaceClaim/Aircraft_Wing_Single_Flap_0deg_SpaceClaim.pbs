@@ -1,0 +1,22 @@
+#!/bin/bash
+#PBS -q qexp
+#PBS -N Aircraft_Wing
+#PBS -l select=1:ncpus=128,walltime=1:00:00
+#PBS -A OPEN-18-12
+
+
+
+ml Qt5
+ml Tk
+ml Anaconda3
+
+export GMTPATH=/home/zao0017/install/Gmsh_Meshing_Tool
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/zao0017/install/Gmsh_Meshing_Tool/Lib/gmsh/install
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/zao0017/install/Gmsh_Meshing_Tool/Lib/gmsh/apps/OCCT/install/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/zao0017/install/Gmsh_Meshing_Tool/Lib/gmsh/apps/FLTK/install/lib64
+
+cd /home/zao0017/install/Gmsh_Meshing_Tool/Benchmarks/Aircraft_Wing/Aircraft_Wing_SpaceClaim_2
+
+
+
+python3 Aircraft_Wing_SpaceClaim_2.py

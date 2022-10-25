@@ -1,0 +1,90 @@
+solid "A1<stl unit=MM>"
+   facet normal 1 0 0
+      outer loop
+         vertex 0 1 0
+         vertex 0 0 0
+         vertex 0 1.00000000018811 -1
+      endloop
+   endfacet
+   facet normal 1 1.12489462190823E-11 1.12489462211983E-11
+      outer loop
+         vertex 0 1.00000000018811 -1
+         vertex 0 0 0
+         vertex 1.12489462210718E-11 1.1249001732223E-11 -1
+      endloop
+   endfacet
+   facet normal 0 1 1.1249001732223E-11
+      outer loop
+         vertex 0 0 0
+         vertex 1 0 0
+         vertex 1.12489462210718E-11 1.1249001732223E-11 -1
+      endloop
+   endfacet
+   facet normal 1.12490017302335E-11 1 2.11605004440312E-21
+      outer loop
+         vertex 1.12489462210718E-11 1.1249001732223E-11 -1
+         vertex 1 0 0
+         vertex 1.00000000018811 0 -1
+      endloop
+   endfacet
+endsolid
+solid "A2<stl unit=MM>"
+   facet normal 0 0 -1
+      outer loop
+         vertex 0 0 0
+         vertex 0 1 0
+         vertex 1 0 0
+      endloop
+   endfacet
+   facet normal 0 0 -1
+      outer loop
+         vertex 1 0 0
+         vertex 0 1 0
+         vertex 1 1 0
+      endloop
+   endfacet
+   facet normal 0 -1 -1.74360092336512E-10
+      outer loop
+         vertex 1 1 0
+         vertex 0 1 0
+         vertex 1.00000000017436 1.00000000017436 -1
+      endloop
+   endfacet
+   facet normal -1.37498519490637E-11 -1 -1.88109944287973E-10
+      outer loop
+         vertex 1.00000000017436 1.00000000017436 -1
+         vertex 0 1 0
+         vertex 0 1.00000000018811 -1
+      endloop
+   endfacet
+endsolid
+solid "A3<stl unit=MM>"
+   facet normal 0 0 -1
+      outer loop
+         vertex 1.12489462210718E-11 1.1249001732223E-11 -1
+         vertex 0 1.00000000018811 -1
+         vertex 1.00000000018811 0 -1
+      endloop
+   endfacet
+   facet normal 0 0 -1
+      outer loop
+         vertex 1.00000000018811 0 -1
+         vertex 0 1.00000000018811 -1
+         vertex 1.00000000017436 1.00000000017436 -1
+      endloop
+   endfacet
+   facet normal 1 0 1.74360092336512E-10
+      outer loop
+         vertex 1 1 0
+         vertex 1 0 0
+         vertex 1.00000000017436 1.00000000017436 -1
+      endloop
+   endfacet
+   facet normal 1 1.37498519490637E-11 1.88109944287973E-10
+      outer loop
+         vertex 1.00000000017436 1.00000000017436 -1
+         vertex 1 0 0
+         vertex 1.00000000018811 0 -1
+      endloop
+   endfacet
+endsolid

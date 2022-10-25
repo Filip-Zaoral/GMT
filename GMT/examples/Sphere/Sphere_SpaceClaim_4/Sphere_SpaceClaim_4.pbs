@@ -1,0 +1,16 @@
+#!/bin/bash
+#PBS -q qexp
+#PBS -N Sphere
+#PBS -l select=1:ncpus=128,walltime=1:00:00
+#PBS -A OPEN-18-12
+
+
+ml Qt5
+ml Tk
+
+export PATH=$PATH:/home/zao0017/install/Gmsh_Meshing_Tool/Lib/gmsh/install
+
+cd /home/zao0017/install/Gmsh_Meshing_Tool/Benchmarks/Sphere/Sphere_SpaceClaim
+
+
+gmsh -2 -clmax 1. -format msh -bin -nt 4 -cpu -o Sphere_SpaceClaim_4.msh Sphere_SpaceClaim_4.igs

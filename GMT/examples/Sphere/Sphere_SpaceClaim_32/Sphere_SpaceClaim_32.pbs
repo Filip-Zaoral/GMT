@@ -1,0 +1,19 @@
+#!/bin/bash
+#PBS -q qexp
+#PBS -N Sphere
+#PBS -l select=1:ncpus=128,walltime=1:00:00
+#PBS -A OPEN-18-12
+
+
+ml Qt5
+ml Tk
+
+export PATH=$PATH:/home/zao0017/install/Gmsh_Meshing_Tool/Lib/gmsh/install
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/zao0017/install/Gmsh_Meshing_Tool/Lib/gmsh/install
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/zao0017/install/Gmsh_Meshing_Tool/Lib/gmsh/apps/OCCT/install/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/zao0017/install/Gmsh_Meshing_Tool/Lib/gmsh/apps/FLTK/install/lib64
+
+cd /home/zao0017/install/Gmsh_Meshing_Tool/Benchmarks/Sphere/Sphere_SpaceClaim
+
+
+gmsh -2 -clmax 1. -format msh -bin -nt 32 -cpu -o Sphere_SpaceClaim_32.msh Sphere_SpaceClaim_32.igs
