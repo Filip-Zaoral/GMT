@@ -47,7 +47,7 @@ def Import():
            'InflationLayersSurfaces' :  [[],4],                                # List of surfaces on which to generate inflation layers.                                               [list]
            'InflationLayers' : [[],1],            					           # Number of inflation layers to generate on the selected surfaces.                                      [integer]
            'InflationLayersMethod' : [[],1],                                   # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 
-                                                                               # 3: Stretch ratio).                                                                                    [integer]
+                                                                               # 3: Total aspect ratio, 4: First layer aspect ratio, 5: Last layer transition ratio).                  [integer]
            'InflationLayersThickness' : [[],2],                                # Inflation layer thickness parameter according to specified method.                                    [float]
            'InflationLayersGrowthRate' : [[],2],                               # Rate of change of thickness of two neighbouring inflation layers, belonging to the selected surface.  [float]
            'LocalMeshSurfaces' : [[],4],                                       # List of surfaces on whitch to enforce local element size.                                             [list]

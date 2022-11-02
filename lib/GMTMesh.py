@@ -132,25 +132,6 @@ def IGS(GCF,Log,TModel,TPreP):
     # Preprocessing:
     nV = len(solidNames)
     if (len(part) == 4) or (len(part) == 5):                                   # Form shells into solids in case when geometry input files contain separate surfaces of respective boundary conditions.
-        # k = 1
-        # for i in range(1,ns1):
-        #     for j in range(1+k,ns1+1):
-        #         try:
-        #             ss, sss = gmsh.model.occ.fragment([(2,i)],[(2,j)],-1,1,1)
-        #             gmsh.model.occ.synchronize()
-        #             nss = len(ss)
-        #             if nss > 2:
-        #                 for k in range(nss - 1):
-        #                     shellNames.append(shellNames[i - 1])               # Extracts names of surface BC groups from model part names.
-        #                     solidTags.append((solidTags[i - 1],               \
-        #                                       solidTags[j - 1]))               # Assigns tags to those volumes.
-        #             if (nss != 2) or (((2,i) not in ss) or ((2,j) not in ss)):
-        #                 shellNames.pop(j - 1)
-        #                 solidTags[i - 1] = (solidTags[i - 1],solidTags[j - 1])
-        #                 solidTags.pop(j - 1)
-        #         except:
-        #             pass
-        #     k += 1
         s = gmsh.model.getEntities(2); ns = len(s)
         Is = [[] for i in range(nV)]
         for i in range(ns):                                                    # Loop over all surfaces in the model.
@@ -1287,10 +1268,12 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     mil = GCF['InflationLayersMethod'][0][-1]
     til = GCF['InflationLayersThickness'][0][-1]
     gil = GCF['InflationLayersGrowthRate'][0][-1]
-    if mil != 2:
+    if mil == 1:
         hil = til / sum(np.logspace(0,nil - 1,nil,True,gil)); dil = til        # In case that input inflation layer thickness is total layer thickness, this line calculates first layer thickness.
-    else:
+    elif mil == 2:
         dil = til * sum(np.logspace(0,nil - 1,nil,True,gil)); hil = til        # In case that input inflation layer thickness is first layer thickness, this line calculates total layer thickness.
+    else:
+        dil = 1; hil = dil / sum(np.logspace(0,nil - 1,nil,True,gil))          # In case that input inflation layer thickness is transition ratio, this line calculates first and total layer thickness.
     
     # Options:
     gmsh.model.add(name)
@@ -1466,17 +1449,36 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     nNsb = np.shape(Nsb)[0]; nEsb = np.shape(ENsb)[0]
     M1 = np.transpose(Nsb[ENsb,:],(0,2,1))
     XYZ = np.reshape(M1,(nEsb,9,1),'C')[:,:,0]                                 # Obtain coordinates of all the nodes in all the elements on all the boundary layer surfaces in needed format.
-    if mil == 3:
+    if (mil == 1) or (mil == 2):
+        NORMALE = np.zeros((nEsb,3),np.float64,'C')
+        NORMALE[:,:] = -dil
+        del (Nsb,ENsb,M1)
+    else:
         NToEi = [[] for i in range(nNsb)]; NToEj = [[] for i in range(nNsb)]
         [NToEi[ENsb[i,j]].extend([i]) for j in range(3) for i in range(nEsb)]  # Get element indicies for all the nodes on all the boundary layer surfaces.
         [NToEj[ENsb[i,j]].extend([j]) for j in range(3) for i in range(nEsb)]  # Get local indicies for all the nodes in all the elements on all the boundary layer surfaces.
         vec = np.vectorize(len); NORMALn = vec(np.asarray(NToEi,np.object,'C'))# Calculate to how many elements given node belongs for all the nodes on all the boundary layer surfaces.
-        M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False) * dil          # Obtain local inflation layer thickness as a fracton of element edge length.
-        M1 += np.roll(M1,2,1)                                                  # Distribute the local inflation layer thickness between all the element nodes.
-        NORMALNabs = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                \
-                                for i in range(nNsb)],np.float64,'C')          # Summ all the contributions to the local nodal inflation layer thickness from all the respective elements.
-        NORMALNabs = NORMALNabs / NORMALn / 2                                  # Calculate the final local nodal inflation layer thickness as a mean value from all the contributions.
-        NORMALE = NORMALNabs[ENsb]                                             # Reorganize the local nodal inflation layer thickness values into needed format.
+        if mil == 3:
+            M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False) * til      # Obtain local total inflation layer thickness as a fracton of element edge length.
+            M1 += np.roll(M1,2,1)                                              # Distribute the local total inflation layer thickness between all the element nodes.
+            NORMALNabs = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])            \
+                                    for i in range(nNsb)],np.float64,'C')      # Summ all the contributions to the local nodal total inflation layer thickness from all the respective elements.
+            NORMALNabs = NORMALNabs / NORMALn / 2                              # Calculate the final local nodal total inflation layer thickness as a mean value from all the contributions.
+        if mil == 4:
+            M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False) * til      # Obtain local first inflation layer thickness as a fracton of element edge length.
+            M1 += np.roll(M1,2,1)                                              # Distribute the local first inflation layer thickness between all the element nodes.
+            M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
+                            for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first inflation layer thickness from all the respective elements.
+            M1 = M1 / NORMALn / 2                                              # Calculate the final local nodal first inflation layer thickness as a mean value from all the contributions.
+            NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
+        else:
+            M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False)           \
+                  * np.sqrt(2 / 3) / 3 / til / gil ** (nil - 1)                # Calculate local first layer height so the last inflation layer prism volume times the transition growth factor and volume of an adjacent tetrahedron are close.
+            M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
+                            for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first layer height from all the respective elements.
+            M1 = M1 / NORMALn                                                  # Calculate the final local nodal first layer height as a mean value from all the contributions.
+            NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
+        NORMALE = NORMALNabs[ENsb]                                             # Reorganize the local nodal total nflation layer thickness values into needed format.
         del (Nsb,ENsb,NORMALNabs,NORMALn,NToEi,NToEj,M1)
         # NToEi = [[] for i in range(nNsb)]; NToEj = [[] for i in range(nNsb)]
         # [NToEi[ENsb[i,j]].extend([i]) for j in range(3) for i in range(nEsb)]  # Get element indicies for all the nodes on all the boundary layer surfaces.
@@ -1488,28 +1490,39 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
         # M3 = M1 / np.linalg.norm(M1,None,1,True)                               # Calculate unit tangents to each edge of all the elements on all the boundary layer surfaces.
         # M3 = np.roll(np.arccos(np.sum(M3 * np.roll(M3,1,2),1,keepdims=1)),1,2) # Calculate nodal angles for each node of each element on all the boundary layer surfaces.
         # M2 = np.repeat(M2[:,:,None],3,2) * np.repeat(M3,3,1)                   # Weight the unit normals of each element on all the boundary layer surfaces.
-        # M1 = -np.linalg.norm(M1,None,1,False) * dil                            # Obtain local inflation layer thickness as a fracton of element edge length.
-        # M1 += np.roll(M1,2,1)                                                  # Distribute the local inflation layer thickness between all the element nodes.
-        # NORMALNabs = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                \
-        #                         for i in range(nNsb)],np.float64,'C')          # Summ all the contributions to the local nodal inflation layer thickness from all the respective elements.
         # NORMALN = np.asarray([np.sum(M2[NToEi[i],:,NToEj[i]],0)               \
-        #                       for i in range(nNsb)],np.float64,'C')             # Summ all the contributions to the unit nodal normal from all the respective elements.
+        #                      for i in range(nNsb)],np.float64,'C')             # Summ all the contributions to the unit nodal normal from all the respective elements.
         # NORMALN = NORMALN / np.linalg.norm(NORMALN,None,1,True)                # Normalize the unit nodal normals.
-        # NORMALNabs = NORMALNabs / NORMALn / 2                                  # Calculate the final local nodal inflation layer thickness as a mean value from all the contributions.
+        # if mil == 3:
+        #     M1 = -np.linalg.norm(M1,None,1,False) * til                        # Obtain local total inflation layer thickness as a fracton of element edge length.
+        #     M1 += np.roll(M1,2,1)                                              # Distribute the local total inflation layer thickness between all the element nodes.
+        #     NORMALNabs = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])            \
+        #                             for i in range(nNsb)],np.float64,'C')      # Summ all the contributions to the local nodal total inflation layer thickness from all the respective elements.
+        #     NORMALNabs = NORMALNabs / NORMALn / 2                              # Calculate the final local nodal total inflation layer thickness as a mean value from all the contributions.
+        # if mil == 4:
+        #     M1 = -np.linalg.norm(M1,None,1,False) * til                        # Obtain local first inflation layer thickness as a fracton of element edge length.
+        #     M1 += np.roll(M1,2,1)                                              # Distribute the local first inflation layer thickness between all the element nodes.
+        #     M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
+        #                     for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first inflation layer thickness from all the respective elements.
+        #     M1 = M1 / NORMALn / 2                                              # Calculate the final local nodal first inflation layer thickness as a mean value from all the contributions.
+        #     NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
+        # else:
+        #     M1 = -np.linalg.norm(M1,None,1,False)                             \
+        #           * np.sqrt(2 / 3) / 3 / til / gil ** (nil - 1)                # Calculate local first layer height so the last inflation layer prism volume times the transition growth factor and volume of an adjacent tetrahedron are close.
+        #     M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
+        #                     for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first layer height from all the respective elements.
+        #     M1 = M1 / NORMALn                                                  # Calculate the final local nodal first layer height as a mean value from all the contributions.
+        #     NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
         # NORMALN = NORMALN * NORMALNabs[:,None]                                 # Scale the unit nodal normals to the value of local inflation layer thickness.
-        # NORMALE = np.reshape(NORMALN[ENsb,:],(nEsb,9,1),'C')[:,:,0]            # Reorganize the local nodal inflation layer thickness values into needed format.
+        # NORMALE = np.reshape(NORMALN[ENsb,:],(nEsb,9,1),'C')[:,:,0]            # Reorganize the local nodal total nflation layer thickness values into needed format.
         # del (Nsb,ENsb,NToEi,NToEj,NORMALn,M1,M2,NORMALN,NORMALNabs,)
-    else:
-        NORMALE = np.zeros((nEsb,3),np.float64,'C')
-        NORMALE[:,:] = -dil
-        del (Nsb,ENsb,M1)
-    XYZ = np.reshape(np.concatenate((XYZ,NORMALE),1),(1,-1),'C')[0]            # Combine nodal coordinates and local nodal inflation layer thickness values into needed format.
+    XYZ = np.reshape(np.concatenate((XYZ,NORMALE),1),(1,-1),'C')[0]            # Combine nodal coordinates and local nodal total inflation layer thickness values into needed format.
     blvTag = gmsh.view.add('InflationLayersNormals')
     gmsh.view.addListData(blvTag,'ST',nEsb,XYZ)
     blvi = gmsh.view.getIndex(blvTag)
     Nil = np.linspace(1,1,nil)
     Hil = np.array([hil * sum(np.logspace(0,i - 1,i,True,gil))                \
-                    for i in range(1,nil + 1)]) / dil
+                   for i in range(1,nil + 1)]) / dil
     Sb = gmsh.model.geo.extrudeBoundaryLayer(sbb,Nil,Hil,True,False,blvi)
     nSb = len(Sb)
     gmsh.model.geo.synchronize()

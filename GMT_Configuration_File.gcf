@@ -2,7 +2,7 @@
 # General Parameters:
 WorkingDirectoryPath       =       # Absolute path to the working directory...........................................................................................................................................[string]
 Name                       =       # Model name.......................................................................................................................................................................[string]
-InputFormat                = 2     # Input geometry file format (1: IGES, 2: STL).....................................................................................................................................[integer]
+InputFormat                = 1     # Input geometry file format (1: IGES, 2: STL).....................................................................................................................................[integer]
 GeometryTolerance          =       # Geometric tolerance..............................................................................................................................................................[float]
 MaxNumThreads              = 1     # Maximum number of CPU threads to use for meshing.................................................................................................................................[integer]
 OutputFormat               = 1     # Format of the output model mesh files (1: MSH, 2: UNV, 3: VTK)...................................................................................................................[float]
@@ -10,7 +10,7 @@ Binary                     = False # Save the mesh to a binary file (if possible
 LaunchGmsh                 = True  # Run Gmsh to see the result after finishing the task?.............................................................................................................................[boolean]
 
 # STL Toplogy Parameters:
-STLRemesh                  = True  # Parameterize and remesh the STL model geometry ?.................................................................................................................................[boolean]
+STLRemesh                  = False # Parameterize and remesh the STL model geometry ?.................................................................................................................................[boolean]
 STLFacetAngle              = 45.   # [°] Minimum angle between the normals of two adjacent triangles when their common segment is already considered an edge..........................................................[float]
 STLCurveAngle              = 180.  # [°] Minimum angle between two segments when their common point is already considered a corner....................................................................................[float]
 
@@ -18,9 +18,9 @@ STLCurveAngle              = 180.  # [°] Minimum angle between two segments whe
 MeshDim                    = 3     # Number of dimensions of the resulting finite element mesh (0: 0D, 1: 1D, 2: 2D, 3: 3D)...........................................................................................[integer]
 MeshAlgorithm              = 6     # 2D meshing algorithm (1: MeshAdapt, 2: Automatic, 3: Initial mesh only, 5: Delaunay, 6: Frontal-Delaunay, 7: BAMG, 8: Frontal-Delaunay for Quads, 9: Packing of Parallelograms)..[integer]
 MeshAlgorithm3D            = 10    # 3D meshing algorithm (1: Delaunay, 3: Initial mesh only, 4: Frontal, 7: MMG3D, 9: R-tree, 10: HXT)...............................................................................[integer]
-MeshSizeFromCurvature      = 6     # Target number of segments per 2π radians of curvature............................................................................................................................[integer]
-MeshSizeExtendFromBoundary = True  # Extend computation of mesh element sizes from the boundaries into the interior?..................................................................................................[boolean]
-MeshSizeMax                = 0.3   # Maximum global size of the finite elements.......................................................................................................................................[float]
+MeshSizeFromCurvature      = 0     # Target number of segments per 2π radians of curvature............................................................................................................................[integer]
+MeshSizeExtendFromBoundary = False # Extend computation of mesh element sizes from the boundaries into the interior?..................................................................................................[boolean]
+MeshSizeMax                = 50.   # Maximum global size of the finite elements.......................................................................................................................................[float]
 MeshSizeMin                =       # Minimum global size of the finite elements.......................................................................................................................................[float]
 MinimumCircleNodes         = 0     # Minimum number of nodes per circle or ellipse....................................................................................................................................[integer]
 MinimumCurveNodes          = 0     # Minimum number of nodes per curve other than a line, circle, or ellipse..........................................................................................................[integer]
@@ -29,21 +29,21 @@ SecondOrderIncomplete      = True  # Create incomplete 2nd order elements (8-nod
 SecondOrderLinear          = False # Create mid-side nodes of higher-order elements and nodes resulting from "subdivision" algorithms by simple linear interpolation?.................................................[boolean]
 Optimize                   = True  # Optimize the mesh to improve the quality of tetrahedral finite elements?.........................................................................................................[boolean]
 OptimizeNetgen             = False # Optimize the mesh to improve the quality of tetrahedral finite elements using the Netgen library?................................................................................[boolean]
-HighOrderOptimize          = 0     # Algorithm for optimization of higher order element mesh (0: none, 1: optimization, 2: elastic and optimization, 3: elastic, 4: fast curving).....................................[integer]
+HighOrderOptimize          = 4     # Algorithm for optimization of higher order element mesh (0: none, 1: optimization, 2: elastic and optimization, 3: elastic, 4: fast curving).....................................[integer]
 
 # Local Meshing Parameters:
-LocalMeshSurfaces          =       # List of surfaces on whitch to enforce local element size.........................................................................................................................[list]
-LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
-LocalMeshSize              =       # Sets the maximum local element size..............................................................................................................................................[float]
-LocalMeshGrowthRate        =       # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
+LocalMeshSurfaces          = FACE,FACE_2,FACE_5,FACE_6,FACE_7,FACE_12
+LocalMeshVolumes           = V2    # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
+LocalMeshSize              = 35.   # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshGrowthRate        = 1.2   # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
 
 # Inflation Layers Parameters:
-InflationLayersSurfaces    =       # List of surfaces on which to generate inflation layers...........................................................................................................................[list]
-InflationLayers            =       # Number of inflation layers to generate on the selected surfaces..................................................................................................................[integer]
-InflationLayersMethod      =       # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Stretch ratio)......................................................................[integer]
-InflationLayersThickness   =       # Inflation layer thickness parameter according to specified method................................................................................................................[float]
-InflationLayersGrowthRate  =       # Rate of change of thickness of two neighbouring inflation layers, belonging to the selected surface............................................ .................................[float]
+InflationLayersSurfaces    = FACE_5,FACE_6,FACE_7,FACE_12
+InflationLayers            = 10    # Number of inflation layers to generate on the selected surfaces..................................................................................................................[integer]
+InflationLayersMethod      = 5     # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Stretch ratio)......................................................................[integer]
+InflationLayersThickness   = 1.    # Inflation layer thickness parameter according to specified method................................................................................................................[float]
+InflationLayersGrowthRate  = 1.5   # Rate of change of thickness of two neighbouring inflation layers, belonging to the selected surface............................................ .................................[float]
 
 
-WorkingDirectoryPath       = c:\users\zao0017\documents\github\gmt\examples\cube\cube_blender # Absolute path to the working directory.
-Name                       = Cube_Blender # Model Name (IGS: <Model Name>.<Volume Name>.igs, STL: <Model Name>.<Volume Name>.<Surface Name>.stl). [string]
+WorkingDirectoryPath       = c:\users\zao0017\documents\github\gmt\examples\inflation_layers_multiple_volumes\inflation_layers_multiple_volumes_spaceclaim # Absolute path to the working directory.
+Name                       = Inflation_Layers_Multiple_Volumes_SpaceClaim # Model Name (IGS: <Model Name>.<Volume Name>.igs, STL: <Model Name>.<Volume Name>.<Surface Name>.stl). [string]

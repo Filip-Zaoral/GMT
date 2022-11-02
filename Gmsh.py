@@ -1,7 +1,7 @@
 
 from sys import argv, platform
 if platform == "win32":
-    from Lib.gmsh.lib import gmsh                                              # Locates the Gmsh source library directory.
+    from lib.gmsh.lib import gmsh                                              # Locates the Gmsh source library directory.
 else:
     import gmsh                                                                # Locates the Gmsh source library directory.
 
