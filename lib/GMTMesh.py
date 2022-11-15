@@ -148,8 +148,15 @@ def IGS(GCF,Log,TModel,TPreP):
         P = 1 #P = min(nV,GCF['MaxNumThreads'][0])
     else:
         P = 1
-    xmin, ymin, zmin, xmax, ymax, zmax = gmsh.model.getBoundingBox(-1,-1)      # Gets the bounding box of the whole model.
-    d = sqrt((xmax - xmin) ** 2 + (ymax - ymin) ** 2 + (zmax - zmin) ** 2)     # Calculates the diagonal of the bounding box.
+    try:
+        xmin, ymin, zmin, xmax, ymax, zmax = gmsh.model.getBoundingBox(-1,-1)  # Gets the bounding box of the whole model.
+        d = sqrt((xmax - xmin) ** 2 + (ymax - ymin) ** 2 + (zmax - zmin) ** 2) # Calculates the diagonal of the bounding box.
+    except:
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: Empty bounding box")
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     gmsh.logger.write("Model bounding box dimensions are:",'info')
     gmsh.logger.write("lx = " + str("{:.4e}".format(xmax - xmin)) + " mm",    \
                       'info')
@@ -296,7 +303,13 @@ def IGS(GCF,Log,TModel,TPreP):
         else:
             gmsh.model.mesh.generate(GCF['MeshDim'][0])                        # Generates the finite element mesh.
     except:
-        pass
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: Mesh generation failed")
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        if ('-nopopup' not in argv) and (GCF['LaunchGmsh'][0] == 1):
+            gmsh.fltk.run()
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     TMesh = perf_counter() - TMesh
     tModel = perf_counter() - tModel; TModel += tModel
     
@@ -465,11 +478,18 @@ def STL(GCF,Log,TModel,TPreP):
     nParts = len(parts)                                                        # Number of model parts.
     solidNames = []; shellNames = []; shellTags = []
     for i in range(nParts):
-        s0 = gmsh.model.getEntities(2)
-        ns0 = len(s0)
-        gmsh.merge(parts[i])                                                   # Loads the STL model part file located in the working directory.
-        s1 = gmsh.model.getEntities(2)
-        ns1 = len(s1)
+        try:
+            s0 = gmsh.model.getEntities(2)
+            ns0 = len(s0)
+            gmsh.merge(parts[i])                                               # Loads the STL model part file located in the working directory.
+            s1 = gmsh.model.getEntities(2)
+            ns1 = len(s1)
+        except:
+            Log += gmsh.logger.get(); gmsh.logger.stop()
+            Log.append("Error: Could not merge file " + parts[i])
+            writeToLogFile.write(Log,name)                                     # The saved file can be located in the working directory.
+            raise Exception("Fatal error occured, see " + GCF['Name'][0] + "."\
+                            "log file for details")
         part = parts[i].split('.')
         if len(part) == 2:
             solidName = part[0] + "_" + str(i + 1)
@@ -521,8 +541,15 @@ def STL(GCF,Log,TModel,TPreP):
     else:
         P = 1
     gmsh.model.geo.synchronize()                                               # Synchronizes model data in the case of STL geometries.
-    xmin, ymin, zmin, xmax, ymax, zmax = gmsh.model.getBoundingBox(-1,-1)      # Gets the bounding box of the whole model.
-    d = sqrt((xmax - xmin) ** 2 + (ymax - ymin) ** 2 + (zmax - zmin) ** 2)     # Calculates the diagonal of the bounding box.
+    try:
+        xmin, ymin, zmin, xmax, ymax, zmax = gmsh.model.getBoundingBox(-1,-1)  # Gets the bounding box of the whole model.
+        d = sqrt((xmax - xmin) ** 2 + (ymax - ymin) ** 2 + (zmax - zmin) ** 2) # Calculates the diagonal of the bounding box.
+    except:
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: Empty bounding box")
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     gmsh.logger.write("Model bounding box dimensions are:",'info')
     gmsh.logger.write("lx = " + str("{:.4e}".format(xmax - xmin)),'info')
     gmsh.logger.write("ly = " + str("{:.4e}".format(ymax - ymin)),'info')
@@ -570,9 +597,19 @@ def STL(GCF,Log,TModel,TPreP):
         raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
                         "file for details")
     if (GCF['STLRemesh'][0]):                                                  # Classifies all surfaces in the model and links the boundary surface groups to the newly created surfaces.
-        gmsh.model.mesh.classifySurfaces(facetAngle,True,True,curveAngle)      # Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
-        gmsh.model.mesh.createGeometry()                                       # Creates a geometry for all the discrete curves and surfaces in the mesh.
-        gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+        try:
+            gmsh.model.mesh.classifySurfaces(facetAngle,True,True,curveAngle)  # Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
+            gmsh.model.mesh.createGeometry()                                   # Creates a geometry for all the discrete curves and surfaces in the mesh.
+            gmsh.model.geo.synchronize()                                       # Synchronizes model data in the case of STL geometries.
+        except:
+            Log += gmsh.logger.get(); gmsh.logger.stop()
+            Log.append("Error: Wrong topology of boundary mesh for parametriz"\
+                       "ation")
+            writeToLogFile.write(Log,name)                                     # The saved file can be located in the working directory.
+            if ('-nopopup' not in argv) and (GCF['LaunchGmsh'][0] == 1):
+                gmsh.fltk.run()
+            raise Exception("Fatal error occured, see " + GCF['Name'][0] + "."\
+                            "log file for details")
         s = gmsh.model.getEntities(2); ns2 = len(s)
         gmsh.model.add(name + '.Tmp')
         for i in range(nParts):                                                # Loads the original model parts for following linking.
@@ -583,6 +620,8 @@ def STL(GCF,Log,TModel,TPreP):
         gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
         s = gmsh.model.getEntities(2)
         s2Ins1 = np.zeros((ns2,1),np.bool_,'C')
+        gmsh.logger.write("Linking new surfaces from classification to the or"\
+                          "iginal ones","info")
         sLink = {}
         for i in range(ns1):                                                   # Links the tags of new surfaces to the tags of original surfaces.
             gmsh.model.setCurrent(name + '.Tmp')
@@ -613,10 +652,14 @@ def STL(GCF,Log,TModel,TPreP):
         gmsh.model.remove()
         gmsh.model.setCurrent(name)
         del (E1,E2)
+        gmsh.logger.write("Done linking new surfaces from classification to t"\
+                          "he original ones","info")
     else:
         shellNamesOld = shellNames; shellTagsOld = shellTags
         ns2 = ns1; ns1 = 0
     if (P == 1) and (GCF['MeshDim'][0] == 3):
+        gmsh.logger.write("Analyzing topology of STL geometry for possible ca"\
+                          "vities","info")
         gmsh.model.mesh.renumberNodes()
         nN = len(gmsh.model.mesh.getNodes(-1,-1,False)[0])
         E = gmsh.model.mesh.getElementsByType(2,-1,0)
@@ -695,6 +738,8 @@ def STL(GCF,Log,TModel,TPreP):
                             Is[j].append([i + 1 + ns1])
                             IV[j].extend([shellTags[i]])
         del Ie
+        gmsh.logger.write("Done analyzing topology of STL geometry for possib"\
+                          "le cavities","info")
         L = {}
         jj = int(1E9) + 1
         Vx = []
@@ -800,7 +845,13 @@ def STL(GCF,Log,TModel,TPreP):
         else:
             gmsh.model.mesh.generate(GCF['MeshDim'][0])                        # Generates the finite element mesh.
     except:
-        pass
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: Mesh generation failed")
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        if ('-nopopup' not in argv) and (GCF['LaunchGmsh'][0] == 1):
+            gmsh.fltk.run()
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     TMesh = perf_counter() - TMesh
     tModel = perf_counter() - tModel; TModel += tModel
     
@@ -948,9 +999,17 @@ def Mesh3DParallel(GCF,Log,solidNames,shellNames,shellTags,TModel,P,PP):
     # gmsh.option.setNumber('Mesh.Binary',GCF['Binary'][0])                      # Write mesh files in binary format (if possible)?\
     # gmsh.option.setNumber("Mesh.MshFileVersion",4.1)
     # of = ['.msh','.unv','.vtk']
-    # for i in range(P):
-    #     gmsh.merge(str(i + 1) + '.' + name + of[GCF['OutputFormat'][0] - 1])
-    #     remove(str(i + 1) + '.' + name + of[GCF['OutputFormat'][0] - 1])
+    # try:
+    #     for i in range(P):
+    #         gmsh.merge(str(i + 1) + '.' + name + of[GCF['OutputFormat'][0] - 1])
+    #         remove(str(i + 1) + '.' + name + of[GCF['OutputFormat'][0] - 1])
+    # except:
+    #     Log += gmsh.logger.get(); gmsh.logger.stop()
+    #     Log.append("Error: Could not merge file " + str(i + 1) + '.' + name + \
+    #                of[GCF['OutputFormat'][0] - 1])
+    #     writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+    #     raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+    #                     "file for details")
     # gmsh.model.mesh.removeDuplicateNodes()
     # gmsh.write(name + of[GCF['OutputFormat'][0] - 1])                          # The saved file can be located in the working directory.
     # TPosP = perf_counter() - TPosP; TModel += TPosP
@@ -1026,9 +1085,16 @@ def STL3D(GCF,solidNamesOld,shellNamesOld,shellTags,PP,Pi):
     gmsh.model.add(name)                                                       # Starts a new model.
     parts = glob('Tmp' + str(Pi + 1) + '.' + name + '.stl')                    # Obtains a list of names of all remeshed parts of the model.
     shellNames = []
-    gmsh.merge(parts[0])                                                       # Loads the STL model part file located in the working directory.
-    remove('Tmp' + str(Pi + 1) + '.' + name + '.stl')
-    gmsh.model.geo.synchronize()                                               # Synchronizes model data in the case of STL geometries.
+    try:
+        gmsh.merge(parts[0])                                                   # Loads the STL model part file located in the working directory.
+        remove('Tmp' + str(Pi + 1) + '.' + name + '.stl')
+        gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+    except:
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: Could not merge file " + parts[0])
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     s1 = gmsh.model.getEntities(2)
     ns1 = len(s1)
     part = parts[0].split('.')
@@ -1057,8 +1123,15 @@ def STL3D(GCF,solidNamesOld,shellNamesOld,shellTags,PP,Pi):
     nV = len(PP[Pi])
     gmsh.option.setNumber('General.NumThreads',                               \
                           max(1,floor(GCF['MaxNumThreads'][0] / nV + 1)))      # Sets the remaining number of CPU threads to use for 3D meshing in the case of HXT mesher.
-    xmin, ymin, zmin, xmax, ymax, zmax = gmsh.model.getBoundingBox(-1,-1)      # Gets the bounding box of the whole model.
-    d = sqrt((xmax - xmin) ** 2 + (ymax - ymin) ** 2 + (zmax - zmin) ** 2)     # Calculates the diagonal of the bounding box.
+    try:
+        xmin, ymin, zmin, xmax, ymax, zmax = gmsh.model.getBoundingBox(-1,-1)  # Gets the bounding box of the whole model.
+        d = sqrt((xmax - xmin) ** 2 + (ymax - ymin) ** 2 + (zmax - zmin) ** 2) # Calculates the diagonal of the bounding box.
+    except:
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: Empty bounding box")
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     gmsh.logger.write("Model bounding box dimensions are:",'info')
     gmsh.logger.write("lx = " + str("{:.4e}".format(xmax - xmin)),'info')
     gmsh.logger.write("ly = " + str("{:.4e}".format(ymax - ymin)),'info')
@@ -1092,6 +1165,8 @@ def STL3D(GCF,solidNamesOld,shellNamesOld,shellTags,PP,Pi):
         gmsh.option.setNumber('Mesh.MeshSizeMin',0.)                           # Calculates the default value of the 'MeshSizeMin' parameter if one specified by the user is too large.
     gmsh.model.mesh.removeDuplicateNodes()
     gmsh.model.mesh.renumberNodes(); gmsh.model.mesh.renumberElements()
+    gmsh.logger.write("Analyzing topology of STL geometry for possible caviti"\
+                      "es","info")
     nN = len(gmsh.model.mesh.getNodes(-1,-1,False)[0])
     E = gmsh.model.mesh.getElementsByType(2,-1,0)
     N = E[1]; E = E[0]; nE = len(E)                                            # Calculates the total number of triangles in whole STL geometry.
@@ -1170,6 +1245,8 @@ def STL3D(GCF,solidNamesOld,shellNamesOld,shellTags,PP,Pi):
                         Is[j].append([s1[i][1]])
                         IV[j].extend([shellTags[s1[i][1] - 1]])
     del Ie
+    gmsh.logger.write("Done analyzing topology of STL geometry for possible c"\
+                      "avities","info")
     L = {}
     jj = int(1E9) + 1
     Vx = []
@@ -1236,7 +1313,13 @@ def STL3D(GCF,solidNamesOld,shellNamesOld,shellTags,PP,Pi):
     try:
         gmsh.model.mesh.generate(max(GCF['MeshDim'][0],2))                     # Generates the finite element mesh.
     except:
-        pass
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: 3D mesh generation failed")
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        if ('-nopopup' not in argv) and (GCF['LaunchGmsh'][0] == 1):
+            gmsh.fltk.run()
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     tMesh = perf_counter() - tMesh
     gmsh.logger.write("***3D meshing time: " + str(tMesh) + "***","info")
     gmsh.option.setNumber("Mesh.MshFileVersion",4.1)
@@ -1318,10 +1401,17 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     
     # Extract and export the inflation layer surfaces:
     gmsh.model.add(name + ".Tmpb")
-    gmsh.merge("Tmp1." + name + ".stl")                                        # Loads the STL model file located in the working directory.
-    gmsh.model.geo.synchronize()                                               # Synchronizes model data in the case of STL geometries.
-    gmsh.model.mesh.createTopology()
-    gmsh.model.geo.synchronize()                                               # Synchronizes model data in the case of STL geometries.
+    try:
+        gmsh.merge("Tmp1." + name + ".stl")                                    # Loads the STL model file located in the working directory.
+        gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+        gmsh.model.mesh.createTopology()
+        gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+    except:
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: Could not merge file " + name + ".stl")
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     sba = []
     s = gmsh.model.getEntities(2); ns = len(s)
     shellNames = np.asarray(shellNames,np.str)
@@ -1345,17 +1435,34 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     gmsh.model.setCurrent(name)
     
     # Import the inflation layer surfaces:
-    gmsh.merge("Tmpb." + name + ".stl")                                        # Loads the STL model file located in the working directory.
-    gmsh.model.geo.synchronize()                                               # Synchronizes model data in the case of STL geometries.
-    gmsh.model.mesh.createTopology()
-    gmsh.model.geo.synchronize()                                               # Synchronizes model data in the case of STL geometries.
+    try:
+        gmsh.merge("Tmpb." + name + ".stl")                                    # Loads the STL model file located in the working directory.
+        gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+        gmsh.model.mesh.createTopology()
+        gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+    except:
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: Could not merge file Tmpb." + name + ".stl")
+        writeToLogFile.write(Log,name)                                        # The saved file can be located in the working directory.
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     sbb = gmsh.model.getEntities(2); nsb = len(sbb)
     if GCF['InputFormat'][0] == 2:
         facetAngle = GCF['STLFacetAngle'][0] * pi / 180.                       # Angle between two facets above which an edge is considered as sharp.
         curveAngle = GCF['STLCurveAngle'][0] * pi / 180.                       # Angle between two curve segments above which an edge is considered as sharp.
-        gmsh.model.mesh.classifySurfaces(facetAngle,False,False,curveAngle)    # Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
-        gmsh.model.mesh.createGeometry()                                       # Creates a geometry for all the discrete curves and surfaces in the mesh.
-        gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+        try:
+            gmsh.model.mesh.classifySurfaces(facetAngle,False,False,curveAngle)# Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
+            gmsh.model.mesh.createGeometry()                                   # Creates a geometry for all the discrete curves and surfaces in the mesh.
+            gmsh.model.geo.synchronize()                                       # Synchronizes model data in the case of STL geometries.
+        except:
+            Log += gmsh.logger.get(); gmsh.logger.stop()
+            Log.append("Error: Wrong topology of boundary mesh for parametriz"\
+                       "ation")
+            writeToLogFile.write(Log,name)                                     # The saved file can be located in the working directory.
+            if ('-nopopup' not in argv) and (GCF['LaunchGmsh'][0] == 1):
+                gmsh.fltk.run()
+            raise Exception("Fatal error occured, see " + GCF['Name'][0] + "."\
+                            "log file for details")
         sbb2 = gmsh.model.getEntities(2); nsb2 = len(sbb2)
         gmsh.model.add(name + '.Tmp')
         gmsh.merge("Tmpb." + name + ".stl")
@@ -1363,6 +1470,8 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
         gmsh.model.mesh.createTopology()
         gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
         s2Ins1 = np.zeros((nsb2,1),np.bool_,'C')
+        gmsh.logger.write("Linking new surfaces from classification to the or"\
+                          "iginal ones","info")
         sLink = {}
         for i in range(nsb):                                                   # Links the tags of new surfaces to the tags of original surfaces.
             gmsh.model.setCurrent(name + '.Tmp')
@@ -1422,10 +1531,22 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
         gmsh.model.remove()
         gmsh.model.setCurrent(name)
         del (E1,E2)
+        gmsh.logger.write("Done linking new surfaces from classification to t"\
+                          "he original ones","info")
     else:
-        gmsh.model.mesh.classifySurfaces(pi,False,False,pi)                    # Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
-        gmsh.model.mesh.createGeometry()                                       # Creates a geometry for all the discrete curves and surfaces in the mesh.
-        gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+        try:
+            gmsh.model.mesh.classifySurfaces(pi,False,False,pi)                # Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
+            gmsh.model.mesh.createGeometry()                                   # Creates a geometry for all the discrete curves and surfaces in the mesh.
+            gmsh.model.geo.synchronize()                                       # Synchronizes model data in the case of STL geometries.
+        except:
+            Log += gmsh.logger.get(); gmsh.logger.stop()
+            Log.append("Error: Wrong topology of boundary mesh for parametriz"\
+                       "ation")
+            writeToLogFile.write(Log,name)                                     # The saved file can be located in the working directory.
+            if ('-nopopup' not in argv) and (GCF['LaunchGmsh'][0] == 1):
+                gmsh.fltk.run()
+            raise Exception("Fatal error occured, see " + GCF['Name'][0] + "."\
+                            "log file for details")
         surfaceTags = np.zeros((ns),np.int32,'C')
         sib = [[] for i in range(nV)]
         for i in sbb:
@@ -1440,7 +1561,7 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     remove("Tmpb." + name + ".stl")
     sbb = gmsh.model.getEntities(2); nsbb = len(sbb)
     
-    # Generate inflation layer volumes:
+    # Generate inflation layer volumes and calculate nodal normals:
     gmsh.model.mesh.renumberNodes(); gmsh.model.mesh.renumberElements()
     Nsb = gmsh.model.mesh.getNodes(2,-1,True,False)
     idx = np.unique(Nsb[0],True)[1]                                            # Get indicies of all the nodes on all the boundary layer surfaces.
@@ -1451,74 +1572,81 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     XYZ = np.reshape(M1,(nEsb,9,1),'C')[:,:,0]                                 # Obtain coordinates of all the nodes in all the elements on all the boundary layer surfaces in needed format.
     if (mil == 1) or (mil == 2):
         NORMALE = np.zeros((nEsb,3),np.float64,'C')
-        NORMALE[:,:] = -dil
+        NORMALE[:,:] = -til
         del (Nsb,ENsb,M1)
-    else:
-        NToEi = [[] for i in range(nNsb)]; NToEj = [[] for i in range(nNsb)]
-        [NToEi[ENsb[i,j]].extend([i]) for j in range(3) for i in range(nEsb)]  # Get element indicies for all the nodes on all the boundary layer surfaces.
-        [NToEj[ENsb[i,j]].extend([j]) for j in range(3) for i in range(nEsb)]  # Get local indicies for all the nodes in all the elements on all the boundary layer surfaces.
-        vec = np.vectorize(len); NORMALn = vec(np.asarray(NToEi,np.object,'C'))# Calculate to how many elements given node belongs for all the nodes on all the boundary layer surfaces.
-        if mil == 3:
-            M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False) * til      # Obtain local total inflation layer thickness as a fracton of element edge length.
-            M1 += np.roll(M1,2,1)                                              # Distribute the local total inflation layer thickness between all the element nodes.
-            NORMALNabs = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])            \
-                                    for i in range(nNsb)],np.float64,'C')      # Summ all the contributions to the local nodal total inflation layer thickness from all the respective elements.
-            NORMALNabs = NORMALNabs / NORMALn / 2                              # Calculate the final local nodal total inflation layer thickness as a mean value from all the contributions.
-        if mil == 4:
-            M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False) * til      # Obtain local first inflation layer thickness as a fracton of element edge length.
-            M1 += np.roll(M1,2,1)                                              # Distribute the local first inflation layer thickness between all the element nodes.
-            M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
-                            for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first inflation layer thickness from all the respective elements.
-            M1 = M1 / NORMALn / 2                                              # Calculate the final local nodal first inflation layer thickness as a mean value from all the contributions.
-            NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
-        else:
-            M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False)           \
-                  * np.sqrt(2 / 3) / 3 / til / gil ** (nil - 1)                # Calculate local first layer height so the last inflation layer prism volume times the transition growth factor and volume of an adjacent tetrahedron are close.
-            M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
-                            for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first layer height from all the respective elements.
-            M1 = M1 / NORMALn                                                  # Calculate the final local nodal first layer height as a mean value from all the contributions.
-            NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
-        NORMALE = NORMALNabs[ENsb]                                             # Reorganize the local nodal total nflation layer thickness values into needed format.
-        del (Nsb,ENsb,NORMALNabs,NORMALn,NToEi,NToEj,M1)
+    if (mil == 3) or (mil == 4) or (mil == 5):
+        gmsh.logger.write("Calculating nodal directional vectors for extrusio"\
+                          "n of inflation layers","info")
         # NToEi = [[] for i in range(nNsb)]; NToEj = [[] for i in range(nNsb)]
         # [NToEi[ENsb[i,j]].extend([i]) for j in range(3) for i in range(nEsb)]  # Get element indicies for all the nodes on all the boundary layer surfaces.
         # [NToEj[ENsb[i,j]].extend([j]) for j in range(3) for i in range(nEsb)]  # Get local indicies for all the nodes in all the elements on all the boundary layer surfaces.
         # vec = np.vectorize(len); NORMALn = vec(np.asarray(NToEi,np.object,'C'))# Calculate to how many elements given node belongs for all the nodes on all the boundary layer surfaces.
-        # M1 -= np.roll(M1,1,2)                                                  # Calculate lengths of all edges of all the elements on all the boundary layer surfaces.
-        # M2 = np.cross(M1[:,:,0],M1[:,:,1],axis=1)                              # Calculate normal of each element on all the boundary layer surfaces.
-        # M2 = M2 / np.linalg.norm(M2,None,1,True)                               # Normalize the normal of each element on all the boundary layer surfaces.
-        # M3 = M1 / np.linalg.norm(M1,None,1,True)                               # Calculate unit tangents to each edge of all the elements on all the boundary layer surfaces.
-        # M3 = np.roll(np.arccos(np.sum(M3 * np.roll(M3,1,2),1,keepdims=1)),1,2) # Calculate nodal angles for each node of each element on all the boundary layer surfaces.
-        # M2 = np.repeat(M2[:,:,None],3,2) * np.repeat(M3,3,1)                   # Weight the unit normals of each element on all the boundary layer surfaces.
-        # NORMALN = np.asarray([np.sum(M2[NToEi[i],:,NToEj[i]],0)               \
-        #                      for i in range(nNsb)],np.float64,'C')             # Summ all the contributions to the unit nodal normal from all the respective elements.
-        # NORMALN = NORMALN / np.linalg.norm(NORMALN,None,1,True)                # Normalize the unit nodal normals.
         # if mil == 3:
-        #     M1 = -np.linalg.norm(M1,None,1,False) * til                        # Obtain local total inflation layer thickness as a fracton of element edge length.
+        #     M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False) * til      # Obtain local total inflation layer thickness as a fracton of element edge length.
         #     M1 += np.roll(M1,2,1)                                              # Distribute the local total inflation layer thickness between all the element nodes.
         #     NORMALNabs = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])            \
         #                             for i in range(nNsb)],np.float64,'C')      # Summ all the contributions to the local nodal total inflation layer thickness from all the respective elements.
         #     NORMALNabs = NORMALNabs / NORMALn / 2                              # Calculate the final local nodal total inflation layer thickness as a mean value from all the contributions.
         # if mil == 4:
-        #     M1 = -np.linalg.norm(M1,None,1,False) * til                        # Obtain local first inflation layer thickness as a fracton of element edge length.
+        #     M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False) * til      # Obtain local first inflation layer thickness as a fracton of element edge length.
         #     M1 += np.roll(M1,2,1)                                              # Distribute the local first inflation layer thickness between all the element nodes.
         #     M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
         #                     for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first inflation layer thickness from all the respective elements.
         #     M1 = M1 / NORMALn / 2                                              # Calculate the final local nodal first inflation layer thickness as a mean value from all the contributions.
         #     NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
-        # else:
-        #     M1 = -np.linalg.norm(M1,None,1,False)                             \
-        #           * np.sqrt(2 / 3) / 3 / til / gil ** (nil - 1)                # Calculate local first layer height so the last inflation layer prism volume times the transition growth factor and volume of an adjacent tetrahedron are close.
+        # if mil == 5:
+        #     M1 = -np.linalg.norm(M1 - np.roll(M1,1,2),None,1,False)           \
+        #           * np.sqrt(2 / 3) / 3 * til / gil ** (nil - 1)                # Calculate local first layer height so the last inflation layer prism volume times the transition growth factor and volume of an adjacent tetrahedron are close.
         #     M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
         #                     for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first layer height from all the respective elements.
         #     M1 = M1 / NORMALn                                                  # Calculate the final local nodal first layer height as a mean value from all the contributions.
         #     NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
-        # NORMALN = NORMALN * NORMALNabs[:,None]                                 # Scale the unit nodal normals to the value of local inflation layer thickness.
-        # NORMALE = np.reshape(NORMALN[ENsb,:],(nEsb,9,1),'C')[:,:,0]            # Reorganize the local nodal total nflation layer thickness values into needed format.
-        # del (Nsb,ENsb,NToEi,NToEj,NORMALn,M1,M2,NORMALN,NORMALNabs,)
+        # NORMALE = NORMALNabs[ENsb]                                             # Reorganize the local nodal total nflation layer thickness values into needed format.
+        # del (Nsb,ENsb,NORMALNabs,NORMALn,NToEi,NToEj,M1)
+        NToEi = [[] for i in range(nNsb)]; NToEj = [[] for i in range(nNsb)]
+        [NToEi[ENsb[i,j]].extend([i]) for j in range(3) for i in range(nEsb)]  # Get element indicies for all the nodes on all the boundary layer surfaces.
+        [NToEj[ENsb[i,j]].extend([j]) for j in range(3) for i in range(nEsb)]  # Get local indicies for all the nodes in all the elements on all the boundary layer surfaces.
+        vec = np.vectorize(len); NORMALn = vec(np.asarray(NToEi,np.object,'C'))# Calculate to how many elements given node belongs for all the nodes on all the boundary layer surfaces.
+        M1 -= np.roll(M1,1,2)                                                  # Calculate lengths of all edges of all the elements on all the boundary layer surfaces.
+        M2 = np.cross(M1[:,:,0],M1[:,:,1],axis=1)                              # Calculate normal of each element on all the boundary layer surfaces.
+        M2 = M2 / np.linalg.norm(M2,None,1,True)                               # Normalize the normal of each element on all the boundary layer surfaces.
+        M3 = M1 / np.linalg.norm(M1,None,1,True)                               # Calculate unit tangents to each edge of all the elements on all the boundary layer surfaces.
+        M3 = np.roll(np.arccos(np.sum(M3 * np.roll(M3,1,2),1,keepdims=1)),1,2) # Calculate nodal angles for each node of each element on all the boundary layer surfaces.
+        M2 = np.repeat(M2[:,:,None],3,2) * np.repeat(M3,3,1)                   # Weight the unit normals of each element on all the boundary layer surfaces.
+        NORMALN = np.asarray([np.sum(M2[NToEi[i],:,NToEj[i]],0)               \
+                             for i in range(nNsb)],np.float64,'C')             # Summ all the contributions to the unit nodal normal from all the respective elements.
+        NORMALN = NORMALN / np.linalg.norm(NORMALN,None,1,True)                # Normalize the unit nodal normals.
+        if mil == 3:
+            M1 = -np.linalg.norm(M1,None,1,False) * til                        # Obtain local total inflation layer thickness as a fracton of element edge length.
+            M1 += np.roll(M1,2,1)                                              # Distribute the local total inflation layer thickness between all the element nodes.
+            NORMALNabs = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])            \
+                                    for i in range(nNsb)],np.float64,'C')      # Summ all the contributions to the local nodal total inflation layer thickness from all the respective elements.
+            NORMALNabs = NORMALNabs / NORMALn / 2                              # Calculate the final local nodal total inflation layer thickness as a mean value from all the contributions.
+        if mil == 4:
+            M1 = -np.linalg.norm(M1,None,1,False) * til                        # Obtain local first inflation layer thickness as a fracton of element edge length.
+            M1 += np.roll(M1,2,1)                                              # Distribute the local first inflation layer thickness between all the element nodes.
+            M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
+                            for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first inflation layer thickness from all the respective elements.
+            M1 = M1 / NORMALn / 2                                              # Calculate the final local nodal first inflation layer thickness as a mean value from all the contributions.
+            NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
+        if mil == 5:
+            M1 = -np.linalg.norm(M1,None,1,False)                             \
+                  * np.sqrt(2 / 3) / 3 * til / gil ** (nil - 1)                # Calculate local first layer height so the last inflation layer prism volume times the transition growth factor and volume of an adjacent tetrahedron are close.
+            M1 = np.asarray([np.sum(M1[NToEi[i],NToEj[i]])                    \
+                            for i in range(nNsb)],np.float64,'C')              # Summ all the contributions to the local nodal first layer height from all the respective elements.
+            M1 = M1 / NORMALn                                                  # Calculate the final local nodal first layer height as a mean value from all the contributions.
+            NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
+        NORMALN = NORMALN * NORMALNabs[:,None]                                 # Scale the unit nodal normals to the value of local inflation layer thickness.
+        NORMALE = np.reshape(NORMALN[ENsb,:],(nEsb,9,1),'C')[:,:,0]            # Reorganize the local nodal total nflation layer thickness values into needed format.
+        del (Nsb,ENsb,NToEi,NToEj,NORMALn,M1,M2,NORMALN,NORMALNabs,)
+        gmsh.logger.write("Done calculating nodal directional vectors for ext"\
+                          "rusion of inflation layers","info")
     XYZ = np.reshape(np.concatenate((XYZ,NORMALE),1),(1,-1),'C')[0]            # Combine nodal coordinates and local nodal total inflation layer thickness values into needed format.
     blvTag = gmsh.view.add('InflationLayersNormals')
-    gmsh.view.addListData(blvTag,'ST',nEsb,XYZ)
+    if (mil == 1) or (mil == 2):
+        gmsh.view.addListData(blvTag,'ST',nEsb,XYZ)
+    if (mil == 3) or (mil == 4) or (mil == 5):
+        gmsh.view.addListData(blvTag,'VT',nEsb,XYZ)
     blvi = gmsh.view.getIndex(blvTag)
     Nil = np.linspace(1,1,nil)
     Hil = np.array([hil * sum(np.logspace(0,i - 1,i,True,gil))                \
@@ -1578,22 +1706,38 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     try:
         gmsh.model.mesh.generate(GCF['MeshDim'][0])                            # Generates the finite element mesh.
     except:
-        pass
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: Generation of inflation layers failed")
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        if ('-nopopup' not in argv) and (GCF['LaunchGmsh'][0] == 1):
+            gmsh.fltk.run()
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     gmsh.model.mesh.removeDuplicateNodes()
     tMesh = perf_counter() - tMesh; TMesh += tMesh
     tPreP = perf_counter()
     
-    # Extract, modify and export the remaining surfaces:
+    # Move the common nodes of the adjacent surfaces to match the volumes:
     Nabxyz = []; Nabd = []; sb01 = []
     sb0 = [[j for j in i if j in sbb] for i in sib]
     if len(saNames) > 0:
         gmsh.model.add(name + ".Tmpa")
-        gmsh.merge("Tmp1." + name + ".stl")                                    # Loads the STL model file located in the working directory.
-        remove("Tmp1." + name + ".stl")
-        gmsh.model.geo.synchronize()
-        gmsh.model.mesh.createTopology()
-        gmsh.model.geo.synchronize()
+        try:
+            gmsh.merge("Tmp1." + name + ".stl")                                # Loads the STL model file located in the working directory.
+            remove("Tmp1." + name + ".stl")
+            gmsh.model.geo.synchronize()
+            gmsh.model.mesh.createTopology()
+            gmsh.model.geo.synchronize()
+        except:
+            Log += gmsh.logger.get(); gmsh.logger.stop()
+            Log.append("Error: Could not merge file Tmp1." + name + ".stl")
+            writeToLogFile.write(Log,name)                                     # The saved file can be located in the working directory.
+            raise Exception("Fatal error occured, see " + GCF['Name'][0] + "."\
+                            "log file for details")
         gmsh.model.setCurrent(name)
+        gmsh.logger.write("Translating boundary nodes of surfaces adjacent to"\
+                          " inflation volumes to restore watertight boundary "\
+                          "mesh","info")
         cb = [gmsh.model.getBoundary(i,True,False,False) for i in sb0]
         cb = list(set([j for i in cb for j in i]))
         pb = list(set(gmsh.model.getBoundary(cb,False,False,False)))
@@ -1648,6 +1792,13 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
             gmsh.model.setCurrent(name)
         gmsh.model.setCurrent(name + ".Tmpa")
         gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+        gmsh.logger.write("Done translating boundary nodes of surfaces adjace"\
+                          "nt to inflation volumes","info")
+        
+        # Update the mesh of the adjacent surfaces:
+        gmsh.logger.write("Morphing the mesh of the surfaces adjacent to the "\
+                          "inflation volumes to avoid intersections and minim"\
+                          "ize element deformations","info")
         siab = [[] for i in range(nV)]
         saa = []; caa = []; NaaTags = []; Naaxyz = []
         for i in sba:
@@ -1697,7 +1848,7 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
             M1 = np.transpose(np.repeat(Nabxyz[:,:,None],nNab,axis=2),(2,0,1)) # Repeat control point coordinates in 3rd dimension and transpose accordingly.
             M2 = np.transpose(Nabxyz[:,:,None],(0,2,1))                        # Transpose add 3rd dimension and transpose accordingly.
             M1 = np.linalg.norm(M1 - M2,None,2)                                # Substract the matrices from previous steps and calculate Frobenius norm for every element.
-            # M1 = 1 / np.sqrt(1 + (0.02 * np.linalg.norm(M1 - M2,None,2)) ** 2)      # Substract the matrices from previous steps and calculate Frobenius norm for every element.
+            # M1 = 1 / np.sqrt(1 + (0.02 * np.linalg.norm(M1 - M2,None,2)) ** 2) # Substract the matrices from previous steps and calculate Frobenius norm for every element.
             C = np.concatenate((np.ones((nNab,1),np.float64,'C'),Nabxyz),1)    # Prepend ones to control points cooridnates.
             # C = np.concatenate((C,Nabxyz ** 2),1)
             # C = np.concatenate((C,Nabxyz[:,[0]] * Nabxyz[:,[1]]),1)
@@ -1705,6 +1856,12 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
             # C = np.concatenate((C,Nabxyz[:,[0]] * Nabxyz[:,[2]]),1)
             A = np.block([[M1,C],[C.T,np.zeros((4,4),np.float64,'C')]])        # Assemble left-hand side.
             B = np.concatenate((Nabd,np.zeros((4,3),np.float64,'C')),0)        # Assemble right-hand side.
+            Acond = np.linalg.cond(A)
+            if Acond > 1E15:
+                gmsh.logger.write("Warning: Value " +                         \
+                                  str("{:.4e}".format(Acond)) + " of conditio"\
+                                  "n number of morphing matrix is too large, "\
+                                  "results may be inaccurate")
             # tMorphSolve = perf_counter()
             Q = np.linalg.solve(A,B)                                           # Solve for gammas and betas.
             # tMorphSolve = perf_counter() - tMorphSolve
@@ -1713,7 +1870,7 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
             M2 = np.transpose(Nabxyz[:,:,None],(2,1,0))                        # Repeat control point coordinates in 3rd dimension and transpose accordingly.
             GAMMAS = np.transpose(GAMMAS[:,:,None],(2,1,0))                    # Repeat gamma values in 3rd dimension and transpose accordingly.
             M1 = np.linalg.norm(M1 - M2,None,1)                                # Calculate Frobenius norm of difference of controled and control point coordinates.
-            # M1 = 1 / np.sqrt(1 + (0.02 * np.linalg.norm(M1 - M2,None,1)) ** 2)      # Calculate Frobenius norm of difference of controled and control point coordinates.
+            # M1 = 1 / np.sqrt(1 + (0.02 * np.linalg.norm(M1 - M2,None,1)) ** 2) # Calculate Frobenius norm of difference of controled and control point coordinates.
             M1 = np.transpose(np.repeat(M1[:,:,None],3,axis=2),(0,2,1))        # Further repeat resultant values from previous step in 3rd dimension and transpose accordingly.
             M1 = np.sum(M1 * GAMMAS,2)                                         # Further multiply resultant values from preivous step with gamma values and sum elements in 3rd dimension.
             M2 = np.concatenate((np.ones((nNaa,1),np.float64,'C'),Naaxyz),1)   # Prepend ones to controled points coordinates.
@@ -1730,6 +1887,8 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
             gmsh.model.geo.synchronize()                                       # Synchronizes model data in the case of STL geometries.
             # tMorph = perf_counter() - tMorph
             del (Nabxyz,Naaxyz,Nabd,M1,M2,A,B,C,Q,GAMMAS,BETAS)
+        gmsh.logger.write("Done morphing the mesh of the surfaces adjacent to"\
+                          " the inflation volumes","info")
         gmsh.model.removeEntities(sba,True)
         # gmsh.model.mesh.classifySurfaces(pi,False,False,pi)                    # Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
         # gmsh.model.mesh.createGeometry()                                       # Creates a geometry for all the discrete curves and surfaces in the mesh.
@@ -1739,12 +1898,19 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
         gmsh.write("Tmpa." + name + ".stl")
         gmsh.model.remove()
         gmsh.model.setCurrent(name)
-        gmsh.merge("Tmpa." + name + ".stl")
-        remove("Tmpa." + name + ".stl")
-        gmsh.model.geo.synchronize()
-        gmsh.model.mesh.removeDuplicateNodes()
+        try:
+            gmsh.merge("Tmpa." + name + ".stl")
+            remove("Tmpa." + name + ".stl")
+            gmsh.model.geo.synchronize()
+            gmsh.model.mesh.removeDuplicateNodes()
+        except:
+            Log += gmsh.logger.get(); gmsh.logger.stop()
+            Log.append("Error: Could not merge file Tmpa." + name + ".stl")
+            writeToLogFile.write(Log,name)                                     # The saved file can be located in the working directory.
+            raise Exception("Fatal error occured, see " + GCF['Name'][0] + "."\
+                            "log file for details")
         
-    # Preprocessing:
+    # Definition of volumes:
     sa = gmsh.model.getEntities(2); sa = sa[nVb + nSb:]; nsa = len(sa)
     for i in range(nsa):
         sName = saNames[i]                                                     # Extracts names of surface BC groups from model part names.
@@ -1843,8 +2009,8 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
                                             + str(ii - 1) + "+" + str(lms) +  \
                                             "/" + str(lmg))
         gmsh.model.mesh.field.add("Min",8 * nmf + 2)
-        gmsh.model.mesh.field.setNumbers(8 * nmf + 2,"FieldsList",            \
-                                         list(range(4 * nmf + 3,8 * nmf + 2,2)))
+        gmsh.model.mesh.field.setNumbers(8 * nmf + 2,"FieldsList",list(range(4\
+                                           * nmf + 3,8 * nmf + 2,2)))
         gmsh.model.mesh.field.setAsBackgroundMesh(8 * nmf + 2)
     
     # Meshing of the remaining volumes:
@@ -1853,7 +2019,13 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     try:
         gmsh.model.mesh.generate(GCF['MeshDim'][0])                            # Generates the finite element mesh.
     except:
-        pass
+        Log += gmsh.logger.get(); gmsh.logger.stop()
+        Log.append("Error: 3D mesh generation failed")
+        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+        if ('-nopopup' not in argv) and (GCF['LaunchGmsh'][0] == 1):
+            gmsh.fltk.run()
+        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+                        "file for details")
     tMesh = perf_counter() - tMesh; TMesh += tMesh
     gmsh.option.setNumber('Mesh.Binary',GCF['Binary'][0])                      # Write mesh files in binary format (if possible)?
     gmsh.option.setNumber("Mesh.SaveAll", 1)                                   # Force Gmsh to write also the elements not belonging to any Physical Group.

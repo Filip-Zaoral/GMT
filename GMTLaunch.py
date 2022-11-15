@@ -14,6 +14,8 @@ else:
     GMT = os.getenv('GMTPATH')
     CWD = os.path.dirname(os.path.abspath(__file__))
 os.path.dirname(argv[0])                                                       # Locates the current directory as the working directory.
+if not GMT:
+    raise Exception("Error: No environment variable named 'GMTPATH' was found")
 path.append(GMT)                                                               # Locates the Gmsh Meshing Tool library directory.
 if CWD == GMT:
     from lib import GMTImport
