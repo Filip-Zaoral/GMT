@@ -1,5 +1,5 @@
 # GMT
-A tool for automated generation of finite element/volume meshes using Gmsh with emphasis on discretization of boundary layers and organization of elements/volumes and nodes into groups based on information contained in input geometry file/s.
+A tool for automated generation of finite element/volume meshes using [Gmsh](https://gitlab.onelab.info/gmsh/gmsh) with emphasis on discretization of boundary layers and organization of elements/volumes and nodes into groups based on information contained in input geometry file/s.
 
 # Author
 Filip Zaoral (filip.zaoral@vsb.cz)
