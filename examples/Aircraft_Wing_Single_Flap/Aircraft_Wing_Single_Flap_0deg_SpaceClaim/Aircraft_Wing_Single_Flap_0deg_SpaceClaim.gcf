@@ -3,7 +3,7 @@
 WorkingDirectoryPath       =       # Absolute path to the working directory...........................................................................................................................................[string]
 Name                       =       # Model name.......................................................................................................................................................................[string]
 InputFormat                = 1     # Input geometry file format (1: IGES, 2: STL).....................................................................................................................................[integer]
-GeometryTolerance          = 5.e-8 # Geometric tolerance..............................................................................................................................................................[float]
+GeometryTolerance          = 5.E-8 # Geometric tolerance..............................................................................................................................................................[float]
 MaxNumThreads              = 4     # Maximum number of CPU threads to use for meshing.................................................................................................................................[integer]
 OutputFormat               = 1     # Format of the output model mesh files (1: MSH, 2: UNV, 3: VTK)...................................................................................................................[float]
 Binary                     = False # Save the mesh to a binary file (if possible)?....................................................................................................................................[boolean]
@@ -35,7 +35,7 @@ HighOrderOptimize          = 4     # Algorithm for optimization of higher order 
 # Wing/Winglet:
 LocalMeshSurfaces          = A1,A3,A5,A6,A7,A30,A36,A37,A46,A49,A50,A56,A57,A58,A63,A64,A65,A66,A67,A68,A69,A70,A73
 LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
-LocalMeshSize              = 25.   # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshSize              = 17.5  # Sets the maximum local element size..............................................................................................................................................[float]
 LocalMeshGrowthRate        = 1.4   # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
 
 # Wing to Flap Gap:
@@ -59,13 +59,13 @@ LocalMeshGrowthRate        = 1.15  # Sets the rate of change in local size of ne
 # Sharp Edges:
 LocalMeshSurfaces          = A9,A10,A11,A12,A13,A14,A15,A16,A17,A19,A20,A21,A22,A23,A24,A25,A26,A27,A28,A55
 LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
-LocalMeshSize              = 0.25  # Sets the maximum local element size..............................................................................................................................................[float]
+LocalMeshSize              = 0.33  # Sets the maximum local element size..............................................................................................................................................[float]
 LocalMeshGrowthRate        = 1.85  # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
 
 # Inflation Layers Parameters:
 InflationLayersSurfaces    = A1,A3,A5,A6,A7,A30,A36,A37,A46,A49,A50,A56,A57,A58,A63,A64,A65,A66,A67,A68,A69,A70,A73,A18,A29,A51,A71,A75,A76,A77,A79,A31,A38,A39,A40,A41,A42,A43,A44,A45,A47,A48,A52,A61,A62,A72,A74,A78,A2,A4,A8,A59,A60,A9,A10,A11,A12,A13,A14,A15,A16,A17,A19,A20,A21,A22,A23,A24,A25,A26,A27,A28,A55
 InflationLayers            = 10    # Number of inflation layers to generate on the selected surfaces..................................................................................................................[integer]
-InflationLayersMethod      = 3     # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Stretch ratio)......................................................................[integer]
-InflationLayersThickness   = 0.7   # Inflation layer thickness parameter according to specified method................................................................................................................[float]
-InflationLayersGrowthRate  = 1.25  # Rate of change of thickness of two neighbouring inflation layers, belonging to the selected surface............................................ .................................[float]
+InflationLayersMethod      = 3     # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Total aspect ratio, 4: First layer aspect ratio, 5: Last layer transition ratio)....[integer]
+InflationLayersThickness   = 0.4   # Inflation layer thickness parameter according to specified method................................................................................................................[float]
+InflationLayersGrowthRate  = 1.3  # Rate of change of thickness of two neighbouring inflation layers that belong to the selected surface.............................................................................[float]
 

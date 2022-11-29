@@ -40,6 +40,6 @@ LocalMeshGrowthRate        =       # Sets the rate of change in local size of ne
 # Inflation Layers Parameters:
 InflationLayersSurfaces    = _Blender(0)_6, _Blender(0)_7, _Blender(0)_8, _Blender(0)_9, _Blender(0)_10
 InflationLayers            = 10    # Number of inflation layers to generate on the selected surfaces..................................................................................................................[integer]
-InflationLayersMethod      = 1     # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Stretch ratio)......................................................................[integer]
+InflationLayersMethod      = 1     # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Total aspect ratio, 4: First layer aspect ratio, 5: Last layer transition ratio)....[integer]
 InflationLayersThickness   = 0.05  # Inflation layer thickness parameter according to specified method................................................................................................................[float]
-InflationLayersGrowthRate  = 1.25  # Rate of change of thickness of two neighbouring inflation layers, belonging to the selected surface............................................ .................................[float]
+InflationLayersGrowthRate  = 1.25  # Rate of change of thickness of two neighbouring inflation layers that belong to the selected surface.............................................................................[float]

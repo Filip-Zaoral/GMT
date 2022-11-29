@@ -18,7 +18,7 @@ MeshAlgorithm              = 6     # 2D meshing algorithm (1: MeshAdapt, 2: Auto
 MeshAlgorithm3D            = 10    # 3D meshing algorithm (1: Delaunay, 3: Initial mesh only, 4: Frontal, 7: MMG3D, 9: R-tree, 10: HXT)...............................................................................[integer]
 MeshSizeFromCurvature      = 6     # Target number of segments per 2π radians of curvature............................................................................................................................[integer]
 MeshSizeExtendFromBoundary = True  # Extend computation of mesh element sizes from the boundaries into the interior?..................................................................................................[boolean]
-MeshSizeMax                = 400.  # Maximum global size of the finite elements.......................................................................................................................................[float]
+MeshSizeMax                = 200.  # Maximum global size of the finite elements.......................................................................................................................................[float]
 MeshSizeMin                =       # Minimum global size of the finite elements.......................................................................................................................................[float]
 MinimumCircleNodes         = 0     # Minimum number of nodes per circle or ellipse....................................................................................................................................[integer]
 MinimumCurveNodes          = 0     # Minimum number of nodes per curve other than a line, circle, or ellipse..........................................................................................................[integer]
@@ -38,6 +38,6 @@ LocalMeshGrowthRate        =       # Rate of change of size of the neighbouring 
 # Inflation Layers Parameters:
 InflationLayersSurfaces    =       # List of surfaces on which to generate inflation layers...........................................................................................................................[list]
 InflationLayers            =       # Number of inflation layers to generate on the selected surfaces..................................................................................................................[integer]
-InflationLayersMethod      =       # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Stretch ratio)......................................................................[integer]
+InflationLayersMethod      =       # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Total aspect ratio, 4: First layer aspect ratio, 5: Last layer transition ratio)....[integer]
 InflationLayersThickness   =       # Inflation layer thickness parameter according to specified method................................................................................................................[float]
-InflationLayersGrowthRate  =       # Rate of change of thickness of two neighbouring inflation layers, belonging to the selected surface............................................ .................................[float]
+InflationLayersGrowthRate  =       # Rate of change of thickness of two neighbouring inflation layers that belong to the selected surface.............................................................................[float]

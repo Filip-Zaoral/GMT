@@ -1401,13 +1401,9 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
         gmsh.option.setNumber('Mesh.MeshSizeMin',GCF['MeshSizeMin'][0])        # Sets the minimum global element size.
     else:
         gmsh.option.setNumber('Mesh.MeshSizeMin',0.)                           # Sets the minimum global element size.
-    gmsh.option.setNumber('Mesh.ElementOrder',GCF['ElementOrder'][0])          # Sets the element order.
-    gmsh.option.setNumber('Mesh.SecondOrderIncomplete',\
-                          GCF['SecondOrderIncomplete'][0])                     # Create incomplete second order elements (8-node quads, 20-node hexas, etc.)?
-    gmsh.option.setNumber('Mesh.SecondOrderLinear',GCF['SecondOrderLinear'][0])# Should second order nodes, and nodes generated through subdivision algorithms, simply be created by linear interpolation?
+    gmsh.option.setNumber('Mesh.ElementOrder',1)                               # Sets the element order.
     gmsh.option.setNumber('Mesh.Optimize',GCF['Optimize'][0])                  # Optimize the mesh to improve the quality of tetrahedral elements?
     gmsh.option.setNumber('Mesh.OptimizeNetgen',GCF['OptimizeNetgen'][0])      # Optimize the mesh using Netgen to improve the quality of tetrahedral elements?
-    gmsh.option.setNumber("Mesh.HighOrderOptimize",GCF['HighOrderOptimize'][0])# Optimize high-order meshes (0: none, 1: optimization, 2: elastic+optimization, 3: elastic, 4: fast curving)?
     gmsh.option.setNumber('General.NumThreads',GCF['MaxNumThreads'][0])        # Sets the maximum number of CPU threads to use for 2D/3D meshing.
     gmsh.option.setNumber('Mesh.MeshOnlyEmpty',1)                              # Mesh only entities that have no existing mesh.
     gmsh.option.setNumber("Mesh.SaveAll",1)                                    # Force Gmsh to write only the elements belonging to a Physical Group.
@@ -1584,8 +1580,18 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     
     # Generate inflation layer volumes and calculate nodal normals:
     gmsh.model.mesh.renumberNodes(); gmsh.model.mesh.renumberElements()
+    if len(saNames) > 0:
+        sb0 = [[j for j in i if j in sbb] for i in sib]
+        cb = [gmsh.model.getBoundary(i,True,False,False) for i in sb0]
+        cb = list(set([j for i in cb for j in i]))
+        pb = list(set(gmsh.model.getBoundary(cb,False,False,False)))
+        pcb = pb + cb; npcb = len(pcb)
+        NpcbTags = [gmsh.model.mesh.getNodes(i[0],i[1],False)[0] - 1          \
+                    for i in pcb]
+        Npcb = [np.reshape(gmsh.model.mesh.getNodes(i[0],i[1],False)[1],(-1,3))\
+                for i in pcb] 
     Nsb = gmsh.model.mesh.getNodes(2,-1,True,False)
-    idx = np.unique(Nsb[0],True)[1]                                            # Get indicies of all the nodes on all the boundary layer surfaces.
+    idx = list(np.unique(Nsb[0],True)[1])                                      # Get indicies of all the nodes on all the boundary layer surfaces.
     Nsb = np.reshape(Nsb[1],(-1,3),'C')[idx,:]                                 # Get sorted coords of all the nodes on all the boundary layer surfaces.
     ENsb = np.reshape(gmsh.model.mesh.getElements(2,-1)[2],(-1,3),'C') - 1     # Get indicies of all the nodes in all the elements on all the boundary layer surfaces.
     nNsb = np.shape(Nsb)[0]; nEsb = np.shape(ENsb)[0]
@@ -1595,7 +1601,7 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
         NORMALE = np.zeros((nEsb,3),np.float64,'C')
         NORMALE[:,:] = -til
         del (Nsb,ENsb,M1)
-    if (mil == 3) or (mil == 4) or (mil == 5):
+    else:
         gmsh.logger.write("Calculating nodal directional vectors for extrusio"\
                           "n of inflation layers","info")
         NToEi = [[] for i in range(nNsb)]; NToEj = [[] for i in range(nNsb)]
@@ -1623,7 +1629,7 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
             M1 = M1 / NORMALn                                                  # Calculate the final local nodal first layer height as a mean value from all the contributions.
             NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
         NORMALE = NORMALNabs[ENsb]                                             # Reorganize the local nodal total nflation layer thickness values into needed format.
-        del (Nsb,ENsb,NORMALNabs,NORMALn,NToEi,NToEj,M1)
+        del (Nsb,ENsb,NORMALn,NToEi,NToEj,M1)
         # NToEi = [[] for i in range(nNsb)]; NToEj = [[] for i in range(nNsb)]
         # [NToEi[ENsb[i,j]].extend([i]) for j in range(3) for i in range(nEsb)]  # Get element indicies for all the nodes on all the boundary layer surfaces.
         # [NToEj[ENsb[i,j]].extend([j]) for j in range(3) for i in range(nEsb)]  # Get local indicies for all the nodes in all the elements on all the boundary layer surfaces.
@@ -1659,7 +1665,7 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
         #     NORMALNabs = M1 * sum(np.logspace(0,nil - 1,nil,True,gil))         # Calculate the local nodal total inflation layer thickness.
         # NORMALN = NORMALN * NORMALNabs[:,None]                                 # Scale the unit nodal normals to the value of local inflation layer thickness.
         # NORMALE = np.reshape(NORMALN[ENsb,:],(nEsb,9,1),'C')[:,:,0]            # Reorganize the local nodal total nflation layer thickness values into needed format.
-        # del (Nsb,ENsb,NToEi,NToEj,NORMALn,M1,M2,NORMALN,NORMALNabs,)
+        # del (Nsb,ENsb,NToEi,NToEj,NORMALn,M1,M2,NORMALN)
         gmsh.logger.write("Done calculating nodal directional vectors for ext"\
                           "rusion of inflation layers","info")
     XYZ = np.reshape(np.concatenate((XYZ,NORMALE),1),(1,-1),'C')[0]            # Combine nodal coordinates and local nodal total inflation layer thickness values into needed format.
@@ -1739,8 +1745,7 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
     tPreP = perf_counter()
     
     # Move the common nodes of the adjacent surfaces to match the volumes:
-    Nabxyz = []; Nabd = []; sb01 = []
-    sb0 = [[j for j in i if j in sbb] for i in sib]
+    Nabxyz = []; Nabd = []
     if len(saNames) > 0:
         gmsh.model.add(name + ".Tmpa")
         try:
@@ -1759,10 +1764,8 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
         gmsh.logger.write("Translating boundary nodes of surfaces adjacent to"\
                           " inflation volumes to restore watertight boundary "\
                           "mesh","info")
-        cb = [gmsh.model.getBoundary(i,True,False,False) for i in sb0]
-        cb = list(set([j for i in cb for j in i]))
-        pb = list(set(gmsh.model.getBoundary(cb,False,False,False)))
-        pcb = pb + cb; npcb = len(pcb)
+        if mil > 2:
+            NORMALNabs = [NORMALNabs[i] for i in NpcbTags]
         sbaTags = [i[1] for i in sba]; sbbTags = [i[1] for i in sbb]
         Cb1Tags = gmsh.model.getBoundary(Sb1,False,False,False)
         Cb1Tags = list(set([i[1] for i in Cb1Tags]))
@@ -1772,21 +1775,20 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
             Nb0xyz = gmsh.model.mesh.getNodes(pcb[i][0],pcb[i][1],False,False) # Obtain coordinates and tags of the inflation layer boundary nodes.
             Nb0Tags = Nb0xyz[0]; Nb0xyz = np.reshape(Nb0xyz[1],(-1,3),'C')
             nNb0 = len(Nb0Tags)
-            if pcb[i][0] == 1:                                                 # In case of point, obtain tag of the extruded "top" node.
+            if pcb[i][0] == 1:                                                 # In case of point, obtain tag of the extruded "top" point.
                 sbi = gmsh.model.getAdjacencies(1,pcb[i][1])[0]
                 sbi = [(2,j) for j in sbi if j not in sbbTags]
-                sb01.extend(sbi)
                 cb01Tags = gmsh.model.getBoundary(sbi,True,False,False)
                 cb01Tags = [j[1] for j in cb01Tags]; cb01Tags.remove(pcb[i][1])
                 pcb1Tag = [j for j in cb01Tags if j in Cb1Tags][0]
-            else:                                                              # In case of curve, obtain tags of the extruded "top" nodes.
+            else:                                                              # In case of curve, obtain tags of the extruded "top" curve.
                 cb01 = gmsh.model.getAdjacencies(0,pcb[i][1])[0]
                 cb01 = [(1,j) for j in cb01 if j not in Cb0Tags]
                 pb01Tags = gmsh.model.getBoundary(cb01,True,False,False)
-                cb01Tags = [j[1] for j in pb01Tags]; cb01Tags.remove(pcb[i][1])
-                pcb1Tag = cb01Tags[0]
-            Nb1xyz = gmsh.model.mesh.getNodes(pcb[i][0],pcb1Tag,False,False)[1]# Obtain coordinates of the extruded "top" nodes.
-            Nb1xyz = np.reshape(Nb1xyz,(-1,3),'C')
+                pb01Tags = [j[1] for j in pb01Tags]; pb01Tags.remove(pcb[i][1])
+                pcb1Tag = pb01Tags[0]
+            Nb1xyz = gmsh.model.mesh.getNodes(pcb[i][0],pcb1Tag,False,False)   # Obtain coordinates of the extruded "top" nodes.
+            Nb1Tags = Nb1xyz[0]; Nb1xyz = np.reshape(Nb1xyz[1],(-1,3),'C')
             gmsh.model.setCurrent(name + ".Tmpa")
             for j in range(nNb0):                                              # Loop over all previously selected nodes. 
                 Eab = gmsh.model.mesh.getElementsByCoordinates(Nb0xyz[j,0],   \
@@ -1803,12 +1805,19 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
                 for k in range(nNa):                                           # Loop over previously selected nodes.
                     naxyz = gmsh.model.mesh.getNode(NaTags[k])[0]              # Obtain coordinates of the given node.
                     if (abs(Nb0xyz[j,:] - naxyz) <= delta).all():              # Searches for the node that is located at the same location as the node belonging to the boundary of the inflation layer surfaces.
-                        Nbd = Nb1xyz - naxyz
-                        Nb1Tona = np.linalg.norm(Nbd,None,1)                   # Calculates distances from the given node to all extruded "top" nodes to find the correct (closest) one.
-                        jj = np.argmin(Nb1Tona)
+                        Nbd = Nb1xyz - naxyz                                   # Calculates distance from the j-th node to every node of the i-th entity (node or curve).
+                        if mil < 3:
+                            Nb1na = Nbd / til                                  # Divides the distance vectors by extrusion length. 
+                        else:
+                            NpcbToNb0 = np.linalg.norm(Npcb[i] - Nb0xyz[j,:], \
+                                                       None,1)
+                            jj = np.argmin(NpcbToNb0)
+                            Nb1na = Nbd / abs(NORMALNabs[i][jj])
+                        Nb1Tona = np.abs(np.linalg.norm(Nb1na,None,1) - 1.)    # Calculates distances from the given node to all extruded "top" nodes to find the correct (closest) one.
+                        jjj = np.argmin(Nb1Tona)                               # Finds the node of the i-th entity (node or curve) that is closest (hopefuly identical) to the j-th node.
                         Nabxyz.extend(naxyz)
-                        Nabd.extend(Nbd[jj,:])
-                        gmsh.model.mesh.setNode(NaTags[k],list(Nb1xyz[jj,:]), \
+                        Nabd.extend(Nbd[jjj,:])
+                        gmsh.model.mesh.setNode(NaTags[k],list(Nb1xyz[jjj,:]),\
                                                 [0.,0.,0.])                    # Translates the node to the location of the extruded "top" node for the mesh to be stitched by removing duplicate nodes later.
             gmsh.model.setCurrent(name)
         gmsh.model.setCurrent(name + ".Tmpa")

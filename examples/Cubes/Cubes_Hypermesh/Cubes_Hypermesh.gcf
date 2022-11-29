@@ -32,7 +32,7 @@ OptimizeNetgen             = False # Optimize the mesh to improve the quality of
 HighOrderOptimize          = 4     # Algorithm for optimization of higher order element mesh (0: none, 1: optimization, 2: elastic and optimization, 3: elastic, 4: fast curving).....................................[integer]
 
 # Local Meshing Parameters:
-LocalMeshSurfaces          = V1.p6.1
+LocalMeshSurfaces          = V1.A6.1
 LocalMeshVolumes           =       # List of volumes on whitch to enforce local element size..........................................................................................................................[list]
 LocalMeshSize              = 0.04  # Sets the maximum local element size..............................................................................................................................................[float]
 LocalMeshGrowthRate        = 1.5   # Sets the rate of change in local size of neighbouring elements...................................................................................................................[float]
@@ -40,6 +40,6 @@ LocalMeshGrowthRate        = 1.5   # Sets the rate of change in local size of ne
 # Inflation Layers Parameters:
 InflationLayersSurfaces    =       # List of surfaces on which to generate inflation layers...........................................................................................................................[list]
 InflationLayers            =       # Number of inflation layers to generate on the selected surfaces..................................................................................................................[integer]
-InflationLayersMethod      =       # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Stretch ratio)......................................................................[integer]
+InflationLayersMethod      =       # Method of specification of inflation layers (1: Total thickess, 2: First layer thickness, 3: Total aspect ratio, 4: First layer aspect ratio, 5: Last layer transition ratio)....[integer]
 InflationLayersThickness   =       # Inflation layer thickness parameter according to specified method................................................................................................................[float]
-InflationLayersGrowthRate  =       # Rate of change of thickness of two neighbouring inflation layers, belonging to the selected surface............................................ .................................[float]
+InflationLayersGrowthRate  =       # Rate of change of thickness of two neighbouring inflation layers that belong to the selected surface.............................................................................[float]
