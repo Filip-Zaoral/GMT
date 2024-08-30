@@ -1540,7 +1540,7 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
                 sib[shellTagsOld[ii] - 1].extend([(2,j) for j in sLink[i[1]]])
         shellNames = [j for i in shellNames for j in i]
         shellTags = [j for i in shellTags for j in i]
-        surfaceTags = [[j] for i in surfaceTags for j in i]
+        surfaceTags = [j for i in surfaceTags for j in i]
         shellNames = np.asarray(shellNames,np.str)
         shellTags = np.asarray(shellTags,np.object)
         surfaceTags = np.asarray(surfaceTags,np.int)
