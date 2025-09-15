@@ -94,11 +94,15 @@ call gmsh%option%setNumber("Geometry.OCCBoundsUseStl", 1d0)
 ! and delete all the parts outside it:
 eps = 1e-3
 call gmsh%model%getEntitiesInBoundingBox(2 - eps, -eps, -eps, 2 + 1 + eps, &
-                                         1 + eps, 1 + eps, dim=3, tags=tags)
+                                         1 + eps, 1 + eps, dim=3, dimTags=tags)
 
-tmp = pack(out, out /= tags)
-out = reshape(tmp, [2, size(tmp)/2])
-deallocate(tmp)
+remove_volumes_outside_bounding_box: block
+    integer(c_int), allocatable :: res(:)
+    res = pack(out(2,:), .not. [(any(out(2,i) == tags(2,:)), i=1, size(out, dim=2))])
+    deallocate(out); allocate(out(2, size(res)))
+    out(1,:) = 3
+    out(2,:) = res
+end block remove_volumes_outside_bounding_box
 
 call gmsh%model%removeEntities(out, .true.)  ! Delete outside parts recursively
 deallocate(out)
@@ -110,7 +114,7 @@ call gmsh%model%mesh%setSize(p, 0.1d0)
 deallocate(p)
 
 call gmsh%model%getEntitiesInBoundingBox(2 - eps, -eps, -eps, 2 + eps, eps, eps,&
-                                         dim=0, tags=p)
+                                         dim=0, dimtags=p)
 
 call gmsh%model%mesh%setSize(p, 0.001d0)
 
@@ -119,7 +123,7 @@ call gmsh%model%mesh%setSize(p, 0.001d0)
 
 ! First we get all surfaces on the left:
 call gmsh%model%getEntitiesInBoundingBox(2 - eps, -eps, -eps, 2 + eps, &
-                                         1 + eps, 1 + eps, dim=2, tags=sxmin)
+                                         1 + eps, 1 + eps, dim=2, dimTags=sxmin)
 
 do i = 1, size(sxmin, 2)
     ! Then we get the bounding box of each left surface
@@ -129,7 +133,7 @@ do i = 1, size(sxmin, 2)
     if (allocated(sxmax)) deallocate(sxmax)
     call gmsh%model%getEntitiesInBoundingBox(xmin - eps + 1, ymin - eps, &
                                              zmin - eps, xmax + eps + 1, &
-                                             ymax + eps, zmax + eps, dim=2, tags=sxmax)
+                                             ymax + eps, zmax + eps, dim=2, dimTags=sxmax)
 
     ! For all the matches, we compare the corresponding bounding boxes...
     do j = 1, size(sxmax, 2)

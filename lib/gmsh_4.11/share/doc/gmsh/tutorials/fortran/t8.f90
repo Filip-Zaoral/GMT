@@ -2,7 +2,7 @@
 !
 !  Gmsh Fortran tutorial 8
 !
-!  Post-processing and animations
+!  Post-processing, image export and animations
 !
 ! ------------------------------------------------------------------------------
 
@@ -105,7 +105,6 @@ call gmsh%view%option%setString(v(3), "Name", "Test...")
 call gmsh%view%option%setNumber(v(3), "Axes", 1d0)
 call gmsh%view%option%setNumber(v(3), "IntervalsType", 2d0)
 call gmsh%view%option%setNumber(v(3), "Type", 2d0)
-call gmsh%view%option%setNumber(v(3), "IntervalsType", 2d0)
 call gmsh%view%option%setNumber(v(3), "AutoPosition", 0d0)
 call gmsh%view%option%setNumber(v(3), "PositionX", 85d0)
 call gmsh%view%option%setNumber(v(3), "PositionY", 50d0)

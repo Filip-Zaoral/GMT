@@ -6,9 +6,9 @@
 #
 # -----------------------------------------------------------------------------
 
-# The Python API allows to do much more than what can be done in .geo files. These
-# additional features are introduced gradually in the extended tutorials,
-# starting with `x1.py'.
+# The Python API allows to do much more than what can be done in .geo
+# files. These additional features are introduced gradually in the extended
+# tutorials, starting with `x1.py'.
 
 # In this first extended tutorial, we start by using the API to access basic
 # geometrical and mesh data.
@@ -16,16 +16,17 @@
 import gmsh
 import sys
 
-if len(sys.argv) < 2:
-    print("Usage: " + sys.argv[0] + " file")
-    exit
-
 gmsh.initialize()
 
-# You can run this tutorial on any file that Gmsh can read, e.g. a mesh file in
-# the MSH format: `python t1.py file.msh'
-
-gmsh.open(sys.argv[1])
+if len(sys.argv) > 1 and sys.argv[1][0] != '-':
+    # If an argument is provided, handle it as a file that Gmsh can read, e.g. a
+    # mesh file in the MSH format (`python x1.py file.msh')
+    gmsh.open(sys.argv[1])
+else:
+    # Otherwise, create and mesh a simple geometry
+    gmsh.model.occ.addCone(1, 0, 0, 1, 0, 0, 0.5, 0.1)
+    gmsh.model.occ.synchronize()
+    gmsh.model.mesh.generate()
 
 # Print the model name and dimension:
 print('Model ' + gmsh.model.getCurrent() + ' (' +
@@ -78,8 +79,8 @@ for e in entities:
     # mesh.
 
     # * Type and name of the entity:
-    type = gmsh.model.getType(e[0], e[1])
-    name = gmsh.model.getEntityName(e[0], e[1])
+    type = gmsh.model.getType(dim, tag)
+    name = gmsh.model.getEntityName(dim, tag)
     if len(name): name += ' '
     print("Entity " + name + str(e) + " of type " + type)
 
@@ -89,7 +90,7 @@ for e in entities:
           " elements")
 
     # * Upward and downward adjacencies:
-    up, down = gmsh.model.getAdjacencies(e[0], e[1])
+    up, down = gmsh.model.getAdjacencies(dim, tag)
     if len(up):
         print(" - Upward adjacencies: " + str(up))
     if len(down):
@@ -106,10 +107,10 @@ for e in entities:
         print(" - Physical groups: " + s)
 
     # * Is the entity a partition entity? If so, what is its parent entity?
-    partitions = gmsh.model.getPartitions(e[0], e[1])
+    partitions = gmsh.model.getPartitions(dim, tag)
     if len(partitions):
         print(" - Partition tags: " + str(partitions) + " - parent entity " +
-              str(gmsh.model.getParent(e[0], e[1])))
+              str(gmsh.model.getParent(dim, tag)))
 
     # * List all types of elements making up the mesh of the entity:
     for t in elemTypes:
@@ -117,6 +118,10 @@ for e in entities:
             t)
         print(" - Element type: " + name + ", order " + str(order) + " (" +
               str(numv) + " nodes in param coord: " + str(parv) + ")")
+
+# Launch the GUI to see the model:
+if '-nopopup' not in sys.argv:
+    gmsh.fltk.run()
 
 # We can use this to clear all the model data:
 gmsh.clear()

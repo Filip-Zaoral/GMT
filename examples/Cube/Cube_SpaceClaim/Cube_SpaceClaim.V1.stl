@@ -88,3 +88,5 @@ solid "A3<stl unit=MM>"
       endloop
    endfacet
 endsolid
+//+
+Surface Loop(1) = {3};

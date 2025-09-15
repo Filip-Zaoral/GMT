@@ -52,7 +52,7 @@ Field[2].DistMax = 0.5;
 // Say we want to modulate the mesh element sizes using a mathematical function
 // of the spatial coordinates. We can do this with the MathEval field:
 Field[3] = MathEval;
-Field[3].F = "Cos(4*3.14*x) * Sin(4*3.14*y) / 10 + 0.101";
+Field[3].F = "cos(4*3.14*x) * sin(4*3.14*y) / 10 + 0.101";
 
 // We could also combine MathEval with values coming from other fields. For
 // example, let's define a `Distance' field around point 1
@@ -100,8 +100,8 @@ Background Field = 7;
 // boundary mesh sizes are interpolated inside surfaces and/or volumes depending
 // on the value of `Mesh.MeshSizeExtendFromBoundary' (which is set by default).
 //
-// When the element size is fully specified by a background mesh size field (as
-// it is in this example), it is thus often desirable to set
+// When the element size is fully specified by a mesh size field (as it is in
+// this example), it is thus often desirable to set
 
 Mesh.MeshSizeExtendFromBoundary = 0;
 Mesh.MeshSizeFromPoints = 0;

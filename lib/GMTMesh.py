@@ -609,14 +609,14 @@ def STL(GCF,Log,TModel,TPreP):
     gmsh.model.geo.synchronize()                                               # Synchronizes model data in the case of STL geometries.
     s = gmsh.model.getEntities(2)
     ns1 = len(s)
-    if ns0 != ns1:
-        Log += gmsh.logger.get(); gmsh.logger.stop()
-        Log.append("Error: The Number of continuous shells doesnt match the n"\
-                   "umber of model part files.Check if geometry in each model"\
-                   " part file is manifold and continuous")                    # Raises error if the number of surfaces doesnt match the number of user defined surface BC groups.
-        writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
-        raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
-                        "file for details")
+    # if ns0 != ns1:
+    #     Log += gmsh.logger.get(); gmsh.logger.stop()
+    #     Log.append("Error: The Number of continuous shells doesnt match the n"\
+    #                "umber of model part files.Check if geometry in each model"\
+    #                " part file is manifold and continuous")                    # Raises error if the number of surfaces doesnt match the number of user defined surface BC groups.
+    #     writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
+    #     raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
+    #                     "file for details")
     if (GCF['STLRemesh'][0]):                                                  # Classifies all surfaces in the model and links the boundary surface groups to the newly created surfaces.
         try:
             gmsh.model.mesh.classifySurfaces(facetAngle,True,True,curveAngle)  # Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
@@ -631,7 +631,8 @@ def STL(GCF,Log,TModel,TPreP):
                 gmsh.fltk.run()
             raise Exception("Fatal error occured, see " + GCF['Name'][0] + "."\
                             "log file for details")
-        s = gmsh.model.getEntities(2); ns2 = len(s)
+        s = gmsh.model.getEntities(2)
+        ns2 = len(s)
         gmsh.model.add(name + '.Tmp')
         for i in range(nParts):                                                # Loads the original model parts for following linking.
             gmsh.merge(parts[i])
@@ -1540,7 +1541,7 @@ def Inflation(GCF,Log,TModel,TPreP,TMesh,solidNames,shellNames,shellTags,d,   \
                 sib[shellTagsOld[ii] - 1].extend([(2,j) for j in sLink[i[1]]])
         shellNames = [j for i in shellNames for j in i]
         shellTags = [j for i in shellTags for j in i]
-        surfaceTags = [j for i in surfaceTags for j in i]
+        surfaceTags = [[j] for i in surfaceTags for j in i]
         shellNames = np.asarray(shellNames,np.str)
         shellTags = np.asarray(shellTags,np.object)
         surfaceTags = np.asarray(surfaceTags,np.int)

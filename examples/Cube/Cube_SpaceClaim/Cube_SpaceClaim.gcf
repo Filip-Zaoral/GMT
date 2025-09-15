@@ -10,7 +10,7 @@ Binary                     = False # Save the mesh to a binary file (if possible
 LaunchGmsh                 = True  # Run Gmsh to see the result after finishing the task?.............................................................................................................................[boolean]
 
 # STL Toplogy Parameters:
-STLRemesh                  = False # Parameterize and remesh the STL model geometry ?.................................................................................................................................[boolean]
+STLRemesh                  = True  # Parameterize and remesh the STL model geometry ?.................................................................................................................................[boolean]
 STLFacetAngle              = 45.   # [°] Minimum angle between the normals of two adjacent triangles when their common segment is already considered an edge..........................................................[float]
 STLCurveAngle              = 180.  # [°] Minimum angle between two segments when their common point is already considered a corner....................................................................................[float]
 
@@ -27,7 +27,7 @@ MinimumCurveNodes          = 0     # Minimum number of nodes per curve other tha
 ElementOrder               = 1     # Order of the finite elements (1: linear, 2: quadratic, 3: cubic).................................................................................................................[integer]
 SecondOrderIncomplete      = True  # Create incomplete 2nd order elements (8-node quads, 20-node hexas, etc.,)?.......................................................................................................[boolean]
 SecondOrderLinear          = False # Create mid-side nodes of higher-order elements and nodes resulting from "subdivision" algorithms by simple linear interpolation?.................................................[boolean]
-Optimize                   = True  # Optimize the mesh to improve the quality of tetrahedral finite elements?.........................................................................................................[boolean]
+Optimize                   = False # Optimize the mesh to improve the quality of tetrahedral finite elements?.........................................................................................................[boolean]
 OptimizeNetgen             = False # Optimize the mesh to improve the quality of tetrahedral finite elements using the Netgen library?................................................................................[boolean]
 HighOrderOptimize          = 4     # Algorithm for optimization of higher order element mesh (0: none, 1: optimization, 2: elastic and optimization, 3: elastic, 4: fast curving).....................................[integer]
 

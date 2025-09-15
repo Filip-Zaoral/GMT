@@ -1,11 +1,11 @@
-This is the binary Software Development Kit (SDK) for Gmsh 4.10.3:
+This is the binary Software Development Kit (SDK) for Gmsh 4.13.1:
 
   * Operating system: Windows64-sdk (CYGWIN)
   * C++ compiler: /usr/bin/x86_64-w64-mingw32-g++.exe
   * C++ compiler ID: GNU
-  * C++ compiler version: 10
+  * C++ compiler version: 11
   * C++ compiler flags: -fopenmp -O2 -g -DNDEBUG
-  * Build options: 64Bit ALGLIB[contrib] ANN[contrib] Bamg Blas[petsc] Blossom Cgns DIntegration DomHex Eigen[contrib] Fltk Gmm[contrib] Hxt Jpeg Kbipack Lapack[petsc] MathEx[contrib] Med Mesh Metis[contrib] Mmg Mpeg Netgen NoSocklenT ONELAB ONELABMetamodel OpenCASCADE OpenCASCADE-CAF OpenGL OpenMP OptHom PETSc Parser Plugins Png Post QuadMeshingTools QuadTri Solver TetGen/BR Voro++[contrib] WinslowUntangler Zlib
+  * Build options: 64Bit ALGLIB[contrib] ANN[contrib] Bamg Blas[petsc] Blossom Cgns DIntegration DomHex Eigen[contrib] Fltk Gmm[contrib] Hxt Jpeg Kbipack Lapack[petsc] MathEx[contrib] Med Mesh Metis[contrib] Mmg Mpeg Netgen Nii2mesh NoSocklenT ONELAB ONELABMetamodel OpenCASCADE OpenCASCADE-CAF OpenGL OpenMP OptHom PETSc Parser Plugins Png Post QuadMeshingTools QuadTri Solver TetGen/BR TinyXML2[contrib] Untangle Voro++[contrib] WinslowUntangler Zlib
 
 Gmsh is distributed under the terms of the GNU General Public License: see
 share/doc/gmsh/LICENSE.txt and share/doc/gmsh/CREDITS.txt. For additional Gmsh
@@ -20,12 +20,14 @@ SDK layout:
   * include/gmsh.h: C++ API header
   * include/gmshc.h: C API header
   * include/gmsh.h_cwrap: C++ wrapper of the C API (see the `Notes' below)
+  * include/gmsh.f90: Fortran module
   * bin/gmsh: gmsh executable (linked with the shared Gmsh library)
   * share/doc/gmsh/tutorials/c++: C++ API tutorials
   * share/doc/gmsh/tutorials/c: C API tutorials
   * share/doc/gmsh/tutorials/python: Python API tutorials
   * share/doc/gmsh/tutorials/julia: Julia API tutorials
-  * share/doc/gmsh/examples/api: Other API examples in C++, C, Python and Julia
+  * share/doc/gmsh/tutorials/fortran: Fortran API tutorials
+  * share/doc/gmsh/examples/api: Other API examples
 
 Notes:
 

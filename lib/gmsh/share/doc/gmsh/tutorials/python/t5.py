@@ -140,15 +140,11 @@ def cheeseHole(x, y, z, r, lc, shells):
 
     # We need non-plane surfaces to define the spherical holes. Here we use the
     # `gmsh.model.geo.addSurfaceFilling()' function, which can be used for
-    # surfaces with 3 or 4 curves on their boundary. With the he built-in
-    # kernel, if the curves are circle arcs, ruled surfaces are created;
-    # otherwise transfinite interpolation is used.
-    #
-    # With the OpenCASCADE kernel, `gmsh.model.occ.addSurfaceFilling()' uses a
-    # much more general generic surface filling algorithm, creating a BSpline
-    # surface passing through an arbitrary number of boundary curves. The
-    # `gmsh.model.geo.addThruSections()' allows to create ruled surfaces (see
-    # `t19.py').
+    # surfaces with 3 or 4 curves on their boundary. If the curves are circle
+    # arcs with the same center, a spherical patch is created; otherwise
+    # transfinite interpolation is used. With the OpenCASCADE kernel,
+    # `gmsh.model.occ.addSurfaceFilling()' can be used with an arbitrary number
+    # of boundary curves, and will fit a BSpline patch through them.
 
     s1 = gmsh.model.geo.addSurfaceFilling([l1])
     s2 = gmsh.model.geo.addSurfaceFilling([l2])
@@ -194,7 +190,7 @@ gmsh.model.addPhysicalGroup(3, [186], 10)
 # We could make only part of the model visible to only mesh this subset:
 # ent = gmsh.model.getEntities()
 # gmsh.model.setVisibility(ent, False)
-# gmsh.model.setVisibility([(3, 5(], True, True)
+# gmsh.model.setVisibility([(3, 5)], True, True)
 # gmsh.option.setNumber("Mesh.MeshOnlyVisible", 1)
 
 # Meshing algorithms can changed globally using options:

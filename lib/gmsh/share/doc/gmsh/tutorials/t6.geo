@@ -2,12 +2,22 @@
 //
 //  Gmsh GEO tutorial 6
 //
-//  Transfinite meshes
+//  Transfinite meshes, deleting entities
 //
 // -----------------------------------------------------------------------------
 
 // Let's use the geometry from the first tutorial as a basis for this one:
-Include "t1.geo";
+lc = 1e-2;
+Point(1) = {0, 0, 0, lc};
+Point(2) = {.1, 0,  0, lc};
+Point(3) = {.1, .3, 0, lc};
+Point(4) = {0,  .3, 0, lc};
+Line(1) = {1, 2};
+Line(2) = {3, 2};
+Line(3) = {3, 4};
+Line(4) = {4, 1};
+Curve Loop(1) = {4, 1, -2, 3};
+Plane Surface(1) = {1};
 
 // Delete the surface and the left line, and replace the line with 3 new ones:
 Delete{ Surface{1}; Curve{4}; }
@@ -55,16 +65,15 @@ Recombine Surface{1};
 // can be omitted in the `Transfinite Surface' constraint:
 Point(7) = {0.2, 0.2, 0, 1.0};
 Point(8) = {0.2, 0.1, 0, 1.0};
-Point(9) = {-0, 0.3, 0, 1.0};
-Point(10) = {0.25, 0.2, 0, 1.0};
-Point(11) = {0.3, 0.1, 0, 1.0};
-Line(10) = {8, 11};
-Line(11) = {11, 10};
-Line(12) = {10, 7};
+Point(9) = {0.25, 0.2, 0, 1.0};
+Point(10) = {0.3, 0.1, 0, 1.0};
+Line(10) = {8, 10};
+Line(11) = {10, 9};
+Line(12) = {9, 7};
 Line(13) = {7, 8};
-Curve Loop(14) = {13, 10, 11, 12};
+Curve Loop(14) = {10, 11, 12, 13};
 Plane Surface(15) = {14};
-Transfinite Curve {10:13} = 10;
+Transfinite Curve {10, 11, 12, 13} = 10;
 Transfinite Surface{15};
 
 // The way triangles are generated can be controlled by appending "Left",
