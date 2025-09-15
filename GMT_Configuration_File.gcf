@@ -4,8 +4,8 @@ WorkingDirectoryPath       =       # Absolute path to the working directory.....
 Name                       =       # Model name.......................................................................................................................................................................[string]
 InputFormat                = 2     # Input geometry file format (1: IGES, 2: STL).....................................................................................................................................[integer]
 GeometryTolerance          =       # Geometric tolerance..............................................................................................................................................................[float]
-MaxNumThreads              = 1     # Maximum number of CPU threads to use for meshing.................................................................................................................................[integer]
-OutputFormat               = 1     # Format of the output model mesh files (1: MSH, 2: UNV, 3: VTK)...................................................................................................................[float]
+MaxNumThreads              = 8     # Maximum number of CPU threads to use for meshing.................................................................................................................................[integer]
+OutputFormat               = 3     # Format of the output model mesh files (1: MSH, 2: UNV, 3: VTK)...................................................................................................................[float]
 Binary                     = False # Save the mesh to a binary file (if possible)?....................................................................................................................................[boolean]
 LaunchGmsh                 = True  # Run Gmsh to see the result after finishing the task?.............................................................................................................................[boolean]
 
@@ -20,7 +20,7 @@ MeshAlgorithm              = 6     # 2D meshing algorithm (1: MeshAdapt, 2: Auto
 MeshAlgorithm3D            = 10    # 3D meshing algorithm (1: Delaunay, 3: Initial mesh only, 4: Frontal, 7: MMG3D, 9: R-tree, 10: HXT)...............................................................................[integer]
 MeshSizeFromCurvature      = 6     # Target number of segments per 2π radians of curvature............................................................................................................................[integer]
 MeshSizeExtendFromBoundary = True  # Extend computation of mesh element sizes from the boundaries into the interior?..................................................................................................[boolean]
-MeshSizeMax                = 0.3   # Maximum global size of the finite elements.......................................................................................................................................[float]
+MeshSizeMax                = 0.1   # Maximum global size of the finite elements.......................................................................................................................................[float]
 MeshSizeMin                =       # Minimum global size of the finite elements.......................................................................................................................................[float]
 MinimumCircleNodes         = 0     # Minimum number of nodes per circle or ellipse....................................................................................................................................[integer]
 MinimumCurveNodes          = 0     # Minimum number of nodes per curve other than a line, circle, or ellipse..........................................................................................................[integer]
@@ -29,7 +29,7 @@ SecondOrderIncomplete      = True  # Create incomplete 2nd order elements (8-nod
 SecondOrderLinear          = False # Create mid-side nodes of higher-order elements and nodes resulting from "subdivision" algorithms by simple linear interpolation?.................................................[boolean]
 Optimize                   = True  # Optimize the mesh to improve the quality of tetrahedral finite elements?.........................................................................................................[boolean]
 OptimizeNetgen             = False # Optimize the mesh to improve the quality of tetrahedral finite elements using the Netgen library?................................................................................[boolean]
-HighOrderOptimize          = 0     # Algorithm for optimization of higher order element mesh (0: none, 1: optimization, 2: elastic and optimization, 3: elastic, 4: fast curving).....................................[integer]
+HighOrderOptimize          = 4     # Algorithm for optimization of higher order element mesh (0: none, 1: optimization, 2: elastic and optimization, 3: elastic, 4: fast curving).....................................[integer]
 
 # Local Meshing Parameters:
 LocalMeshSurfaces          =       # List of surfaces on whitch to enforce local element size.........................................................................................................................[list]
@@ -45,5 +45,5 @@ InflationLayersThickness   =       # Inflation layer thickness parameter accordi
 InflationLayersGrowthRate  =       # Rate of change of thickness of two neighbouring inflation layers that belong to the selected surface.............................................................................[float]
 
 
-WorkingDirectoryPath       = c:\users\zao0017\documents\open_source_fe_meshers\gmt_1.0_windows\examples\cube\cube_blender # Absolute path to the working directory.
-Name                       = Cube_Blender # Model Name (IGS: <Model Name>.<Volume Name>.igs, STL: <Model Name>.<Volume Name>.<Surface Name>.stl). [string]
+WorkingDirectoryPath       = c:\users\zao0017\documents\github\gmt\examples\test # Absolute path to the working directory.
+Name                       = test01_cut2 # Model Name (IGS: <Model Name>.<Volume Name>.igs, STL: <Model Name>.<Volume Name>.<Surface Name>.stl). [string]

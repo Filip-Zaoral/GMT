@@ -1,23 +1,3 @@
-4.11.0 (November 6, 2022): new Fortran API; improved copying ("Duplicata") of
-multiple shapes with OCC; reduced default order for OCC surface filling;
-arbitrary string attributes can now be stored in models and MSH files; new
-Radioss export; added ability to specify spline tangents with OCC; new option
-Mesh.SaveWithoutOrphans to prune orphan entities (e.g. geometrical construction
-points) from MSH4 files; major overhaul of the reference manual; new official
-macOS ARM builds; small bug fixes.
-
-* New API functions: model/getAttributeNames, model/getAttribute,
-  model/setAttribute, model/removeAttribute
-
-* Incompatible API changes: new argument to mesh/computeHomology; new optional
-  arguments to occ/addSpline and occ/addThruSections
-
-4.10.5 (July 1, 2022): small bug fixes.
-
-4.10.4 (June 19, 2022): improved graphical window tooltips; small bug fixes.
-
-* New API function: mesh/removeDuplicateElements
-
 4.10.3 (May 26, 2022): small bug fixes.
 
 * New API function: fltk/finalize

@@ -82,11 +82,8 @@ int main(int argc, char **argv)
   // should be freed with `gmshFree()' when not used anymore:
   gmshFree(ov);
 
-  // Note that in the C API, undesired output values can be ignored by passing a
-  // NULL pointer. For example, to ignore the error flag, we can pass NULL as
-  // the last argument:
   const int cl2[] = {5, -8, -7, 3};
-  gmshModelGeoAddCurveLoop(cl2, sizeof(cl2) / sizeof(cl2[0]), 10, 0, NULL);
+  gmshModelGeoAddCurveLoop(cl2, sizeof(cl2) / sizeof(cl2[0]), 10, 0, &ierr);
 
   const int s2[] = {10};
   gmshModelGeoAddPlaneSurface(s2, sizeof(s2) / sizeof(s2[0]), 11, &ierr);
@@ -164,15 +161,18 @@ int main(int argc, char **argv)
   // the surface 11 along the z axis and automatically creates a new volume (as
   // well as all the needed points, curves and surfaces). As expected, the
   // function takes a vector of (dim, tag) pairs as input as well as the
-  // translation vector; since we don't plan to use the output vector of (dim,
-  // tag) pairs, we pass NULL instead:
+  // translation vector, and returns a vector of (dim, tag) pairs as output:
+  int *ov2;
+  size_t ov2_n;
   const int *numElements;
   const size_t numElements_n = 0;
   const double *heights;
   const size_t heights_n = 0;
   const int recombine = 0;
-  gmshModelGeoExtrude(&(ov[2]), 2, 0.0, 0.0, 0.12, NULL, NULL, numElements,
+  gmshModelGeoExtrude(&(ov[2]), 2, 0.0, 0.0, 0.12, &ov2, &ov2_n, numElements,
                       numElements_n, heights, heights_n, recombine, &ierr);
+  gmshFree(ov);
+  gmshFree(ov2);
 
   // Mesh sizes associated to geometrical points can be set by passing a vector
   // of (dim, tag) pairs for the corresponding points:
