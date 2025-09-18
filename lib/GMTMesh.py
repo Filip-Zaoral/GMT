@@ -609,17 +609,16 @@ def STL(GCF,Log,TModel,TPreP):
     gmsh.model.geo.synchronize()                                               # Synchronizes model data in the case of STL geometries.
     s = gmsh.model.getEntities(2)
     ns1 = len(s)
-    # if ns0 != ns1:
+    # if ns1 != nParts:
     #     Log += gmsh.logger.get(); gmsh.logger.stop()
-    #     Log.append("Error: The Number of continuous shells doesnt match the n"\
-    #                "umber of model part files.Check if geometry in each model"\
-    #                " part file is manifold and continuous")                    # Raises error if the number of surfaces doesnt match the number of user defined surface BC groups.
+    #     Log.append("Error: The geometry is not manifold.")                     # Raises error if the number of surfaces doesnt match the number of user defined surface BC groups.
     #     writeToLogFile.write(Log,name)                                         # The saved file can be located in the working directory.
     #     raise Exception("Fatal error occured, see " + GCF['Name'][0] + ".log "\
     #                     "file for details")
     if (GCF['STLRemesh'][0]):                                                  # Classifies all surfaces in the model and links the boundary surface groups to the newly created surfaces.
         try:
-            gmsh.model.mesh.classifySurfaces(facetAngle,True,True,curveAngle)  # Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
+            gmsh.model.mesh.classifySurfaces(facetAngle,True,False,curveAngle)  # Splits surfaces and their boundaries based on angles between neighbouring facets and curve segments.
+            # gmsh.model.mesh.createTopology()
             gmsh.model.mesh.createGeometry()                                   # Creates a geometry for all the discrete curves and surfaces in the mesh.
             gmsh.model.geo.synchronize()                                       # Synchronizes model data in the case of STL geometries.
         except:
@@ -631,54 +630,56 @@ def STL(GCF,Log,TModel,TPreP):
                 gmsh.fltk.run()
             raise Exception("Fatal error occured, see " + GCF['Name'][0] + "."\
                             "log file for details")
-        s = gmsh.model.getEntities(2)
-        ns2 = len(s)
-        gmsh.model.add(name + '.Tmp')
-        for i in range(nParts):                                                # Loads the original model parts for following linking.
-            gmsh.merge(parts[i])
-        gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
-        gmsh.model.mesh.removeDuplicateNodes()
+    else:
+        ns0 = 0; ns1 = nParts
+    s = gmsh.model.getEntities(2)
+    ns2 = len(s)
+    gmsh.logger.write("Linking new surfaces from classification to the or"\
+                        "iginal ones","info")
+    gmsh.model.add(name + '.Tmp')
+    for i in range(nParts):                                                # Loads the original model parts for following linking.
+        gmsh.merge(parts[i])
+    gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
+    gmsh.model.mesh.removeDuplicateNodes()
+    if (GCF['STLRemesh'][0]):
         gmsh.model.mesh.createTopology()
         gmsh.model.geo.synchronize()                                           # Synchronizes model data in the case of STL geometries.
-        s = gmsh.model.getEntities(2)
-        s2Ins1 = np.zeros((ns2,1),np.bool_,'C')
-        gmsh.logger.write("Linking new surfaces from classification to the or"\
-                          "iginal ones","info")
-        sLink = {}
-        for i in range(ns1):                                                   # Links the tags of new surfaces to the tags of original surfaces.
-            gmsh.model.setCurrent(name + '.Tmp')
-            E1 = gmsh.model.mesh.getNodesByElementType(2,i + 1,False)[1]
-            E1 = np.reshape(E1,(-1,3,3),'C')
-            if len(E1) == 1:
-                np.append(E1,np.zeros((1,3,3),np.float64,'C'),0)
-            for j in range(ns2):
-                if s2Ins1[j] == False:
-                    gmsh.model.setCurrent(name)
-                    E2 = gmsh.model.mesh.getNodesByElementType(2,j + 1 + ns1, \
-                                                               False)[1]
-                    E2 = np.reshape(E2,(-1,3,3),'C')
-                    E2InE1 = any(np.equal(np.greater_equal(E1,E2[0] - delta), \
-                                          np.less_equal(E1,E2[0] + delta))    \
-                                 .all(2).all(1))
-                    if E2InE1:
-                        s2Ins1[j] = True
-                        if i + 1 not in sLink:
-                            sLink[i + 1] = []
-                        sLink[i + 1].append(j + 1 + ns1)
-        shellNamesOld = shellNames; shellNames = []
-        shellTagsOld = shellTags; shellTags = []
-        for i in range(ns1):                                                   # Updates the lists with various tags and names belonging to the surfaces.
-            shellNames.extend([shellNamesOld[i]] * len(sLink[i + 1]))
-            shellTags.extend([shellTagsOld[i]] * len(sLink[i + 1]))
+    s = gmsh.model.getEntities(2)
+    s2Ins1 = np.zeros((ns2,1),np.bool_,'C')
+    sLink = {}
+    for i in range(ns1):                                                   # Links the tags of new surfaces to the tags of original surfaces.
         gmsh.model.setCurrent(name + '.Tmp')
-        gmsh.model.remove()
-        gmsh.model.setCurrent(name)
-        del (E1,E2)
-        gmsh.logger.write("Done linking new surfaces from classification to t"\
-                          "he original ones","info")
-    else:
-        shellNamesOld = shellNames; shellTagsOld = shellTags
-        ns2 = ns1; ns1 = 0
+        E1 = gmsh.model.mesh.getNodesByElementType(2,i + 1,False)[1]
+        E1 = np.reshape(E1,(-1,3,3),'C')
+        if len(E1) == 1:
+            np.append(E1,np.zeros((1,3,3),np.float64,'C'),0)
+        for j in range(ns2):
+            if s2Ins1[j] == False:
+                gmsh.model.setCurrent(name)
+                E2 = gmsh.model.mesh.getNodesByElementType(2,j + 1 + ns0, \
+                                                            False)[1]
+                E2 = np.reshape(E2,(-1,3,3),'C')
+                E2InE1 = any(np.equal(np.greater_equal(E1,E2[0] - delta), \
+                                        np.less_equal(E1,E2[0] + delta))    \
+                                .all(2).all(1))
+                if E2InE1:
+                    s2Ins1[j] = True
+                    if i + 1 not in sLink:
+                        sLink[i + 1] = []
+                    sLink[i + 1].append(j + 1 + ns0)
+    shellNamesOld = shellNames; shellNames = []
+    shellTagsOld = shellTags; shellTags = []
+    for i in range(ns1):                                                   # Updates the lists with various tags and names belonging to the surfaces.
+        shellNames.extend([shellNamesOld[i]] * len(sLink[i + 1]))
+        shellTags.extend([shellTagsOld[i]] * len(sLink[i + 1]))
+    gmsh.model.setCurrent(name + '.Tmp')
+    gmsh.model.remove()
+    gmsh.model.setCurrent(name)
+    del (E1,E2)
+    gmsh.logger.write("Done linking new surfaces from classification to t"\
+                        "he original ones","info")
+    # shellNames = ["A1"]*ns2; shellNamesOld = ["A1"]
+    # shellTags = [1]*ns2; shellTagsOld = [1]
     if (P == 1) and (GCF['MeshDim'][0] == 3):
         gmsh.logger.write("Analyzing topology of STL geometry for possible ca"\
                           "vities","info")
@@ -720,7 +721,7 @@ def STL(GCF,Log,TModel,TPreP):
         IV = [[] for i in range(nI)]
         nsa = [0,0]
         for i in range(ns2):                                                   # Loops over all surfaces in the model geometry in order to link them to the surface loops ("islands") in the model.
-            e2 = gmsh.model.mesh.getElementsByType(2,i + 1 + ns1,0)[0][0]
+            e2 = gmsh.model.mesh.getElementsByType(2,i + 1 + ns0,0)[0][0]
             for j in range(nI):                                                # Loops over all surface loops ("islands") in the model.
                 eInI = any(np.isin(Ie[j],e2))
                 if eInI:
@@ -729,39 +730,40 @@ def STL(GCF,Log,TModel,TPreP):
                         for k in range(nII):                                   # Loops over all volumes linked to those surface loops ("islands").
                             if type(shellTags[i]) is tuple:
                                 if shellTags[i][0] == IV[j][k]:
-                                    Is[j][k].extend([i + 1 + ns1])
+                                    Is[j][k].extend([i + 1 + ns0])
                                     nsa[0] +=  1
                                 if shellTags[i][1] == IV[j][k]:
-                                    Is[j][k].extend([i + 1 + ns1])
+                                    Is[j][k].extend([i + 1 + ns0])
                                     nsa[1] +=  1
                             else:
                                 if shellTags[i] == IV[j][k]:
-                                    Is[j][k].extend([i + 1 + ns1])
+                                    Is[j][k].extend([i + 1 + ns0])
                                     nsa[0] +=  1
                         if type(shellTags[i]) is tuple:
                             if nsa[0] == 0:
-                                Is[j].append([i + 1 + ns1])
+                                Is[j].append([i + 1 + ns0])
                                 IV[j].extend([shellTags[i][0]])
                             if nsa[1] == 0:
-                                Is[j].append([i + 1 + ns1])
+                                Is[j].append([i + 1 + ns0])
                                 IV[j].extend([shellTags[i][1]])
                         else:
                             if nsa[0] == 0:
-                                Is[j].append([i + 1 + ns1])
+                                Is[j].append([i + 1 + ns0])
                                 IV[j].extend([shellTags[i]])
                         nsa = [0,0]
                     else:
                         if type(shellTags[i]) is tuple:
-                            Is[j].append([i + 1 + ns1])
-                            Is[j].append([i + 1 + ns1])
+                            Is[j].append([i + 1 + ns0])
+                            Is[j].append([i + 1 + ns0])
                             IV[j].extend([shellTags[i][0]])
                             IV[j].extend([shellTags[i][1]])
                         else:
-                            Is[j].append([i + 1 + ns1])
+                            Is[j].append([i + 1 + ns0])
                             IV[j].extend([shellTags[i]])
         del Ie
         gmsh.logger.write("Done analyzing topology of STL geometry for possib"\
                           "le cavities","info")
+        # Is = [[[i[1] for i in s]]]; IV = [[1]]
         L = {}
         jj = int(1E9) + 1
         Vx = []
